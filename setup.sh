@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# ai-dev-kit — set up a project for AI-assisted development across
+# ai-dev-kit - set up a project for AI-assisted development across
 # Claude Code (Claude), OpenAI Codex (GPT), and GitHub Copilot (any model).
 #
 # Usage:  ./setup.sh [TARGET_DIR] [options]
@@ -123,7 +123,7 @@ print_summary() {
   log_info "Agents: ${EN_CLAUDE:+Claude }${EN_CODEX:+Codex }${EN_COPILOT:+Copilot}"
   echo
   log_info "Next steps:"
-  log_dim "1. Edit AGENTS.md — your single source of truth for all three agents."
+  log_dim "1. Edit AGENTS.md - your single source of truth for all three agents."
   log_dim "2. Fill in docs/ai-prompts/00-standards.md (code/commit/PR standards, tools, tests)."
   [ -n "${EN_CODEX:-}" ]   && log_dim "3. Codex: open the project once and 'trust' it so .codex/config.toml loads."
   [ -n "${EN_COPILOT:-}" ] && log_dim "4. Copilot: pick the model in the task model-picker; commit copilot-setup-steps.yml to the DEFAULT branch."
@@ -136,8 +136,8 @@ main() {
   TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"; export TARGET_DIR
 
   detect_os; detect_arch; detect_pkg_mgr
-  log_step "ai-dev-kit → $TARGET_DIR   (${ADK_OS}/${ADK_ARCH}, pkg=${ADK_PKG})"
-  is_dry && log_warn "DRY RUN — no installs or file writes will happen."
+  log_step "ai-dev-kit -> $TARGET_DIR   (${ADK_OS}/${ADK_ARCH}, pkg=${ADK_PKG})"
+  is_dry && log_warn "DRY RUN - no installs or file writes will happen."
 
   choose_agents
   [ -n "${EN_CLAUDE:-}${EN_CODEX:-}${EN_COPILOT:-}" ] || die "No agents selected; nothing to do."

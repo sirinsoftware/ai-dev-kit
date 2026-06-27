@@ -1,4 +1,4 @@
-# lib/configure_codex.sh — verify the OpenAI Codex CLI, note Superpowers steps.
+# lib/configure_codex.sh - verify the OpenAI Codex CLI, note Superpowers steps.
 # Assumes the user already has the Codex CLI installed.
 # shellcheck shell=bash
 [ -n "${_ADK_CONFIGURE_CODEX_SOURCED:-}" ] && return 0

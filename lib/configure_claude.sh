@@ -1,4 +1,4 @@
-# lib/configure_claude.sh — verify the Claude Code CLI, optionally set up Superpowers.
+# lib/configure_claude.sh - verify the Claude Code CLI, optionally set up Superpowers.
 # Assumes the user already has the Claude Code CLI installed.
 # shellcheck shell=bash
 [ -n "${_ADK_CONFIGURE_CLAUDE_SOURCED:-}" ] && return 0
@@ -17,7 +17,7 @@ configure_claude() {
 
   if [ -n "${WANT_SUPERPOWERS:-}" ]; then
     if has_cmd claude; then
-      log_info "Installing Superpowers plugin for Claude Code…"
+      log_info "Installing Superpowers plugin for Claude Code..."
       claude plugin marketplace add "$SUPERPOWERS_MARKETPLACE" >/dev/null 2>&1 || true
       if claude plugin install superpowers@superpowers-marketplace >/dev/null 2>&1; then
         log_success "Superpowers installed. Run '/reload-plugins' (or restart) to activate."
@@ -26,7 +26,7 @@ configure_claude() {
         log_dim   "/plugin install superpowers@claude-plugins-official"
       fi
     else
-      log_warn "Skipping Superpowers — Claude Code CLI not available."
+      log_warn "Skipping Superpowers - Claude Code CLI not available."
     fi
   fi
 }

@@ -1,4 +1,4 @@
-# lib/detect.sh — OS / arch / package-manager / tooling detection.
+# lib/detect.sh - OS / arch / package-manager / tooling detection.
 # shellcheck shell=bash
 [ -n "${_ADK_DETECT_SOURCED:-}" ] && return 0
 _ADK_DETECT_SOURCED=1

@@ -1,4 +1,4 @@
-# lib/idempotent.sh — safe, re-runnable file operations.
+# lib/idempotent.sh - safe, re-runnable file operations.
 # shellcheck shell=bash
 [ -n "${_ADK_IDEMP_SOURCED:-}" ] && return 0
 _ADK_IDEMP_SOURCED=1

@@ -1,4 +1,4 @@
-# lib/prompt.sh — interactive prompts that survive `curl ... | bash` (read from /dev/tty).
+# lib/prompt.sh - interactive prompts that survive `curl ... | bash` (read from /dev/tty).
 # Honors ASSUME_YES (non-interactive: take the default). Prompts go to stderr so
 # command-substitution callers ($(ask ...)) capture only the answer.
 # shellcheck shell=bash
@@ -29,7 +29,7 @@ confirm() {
   fi
   printf '%s ' "${_c_blu}?${_c_reset} $q $hint" >&2
   if ! _read_tty ans; then
-    log_warn "No terminal available — using default ($def) for: $q"
+    log_warn "No terminal available - using default ($def) for: $q"
     ans="$def"
   fi
   ans="${ans:-$def}"
