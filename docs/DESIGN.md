@@ -9,9 +9,11 @@ committed files.
 ## Principles
 1. **One source of truth.** Instructions live once in `AGENTS.md` and propagate to
    all three agents (see `single-source-of-truth.md`). No manual duplication.
-2. **Idempotent setup.** `setup.sh` is safe to re-run: `command -v` gates installs,
-   managed marker blocks (`ai-dev-kit:<id>`) preserve user edits, files are backed
-   up once to `*.adk-bak`, and `--dry-run` shows planned actions.
+2. **Idempotent + reversible.** Re-running updates only the kit's own files (tracked
+   in `.ai-dev-kit-manifest`); a pre-existing user file is handled per `--on-conflict`
+   (prompt/backup/skip/overwrite). Managed marker blocks (`ai-dev-kit:<id>`) preserve
+   surrounding edits; backups go to `*.adk-bak`; `--dry-run` previews. `uninstall.sh`
+   reverses everything, restoring backed-up originals.
 3. **Explicit separation.** Shared/committed (repo files) vs. user-owned
    (`AGENTS.md`, incl. its Standards section) vs. generated/gitignored (`graphify-out/`).
 4. **No invented config.** We only write files each tool actually reads. Where a
@@ -25,7 +27,8 @@ print summary.
 
 ## Layout
 ```
-setup.sh / bootstrap.sh        entry points
+setup.sh / bootstrap.sh        entry points (configure a project)
+uninstall.sh                   reverse setup for a project (restore/remove)
 lib/*.sh                       helpers + per-agent configure modules + scaffolding
 templates/                     files rendered into the target project
   AGENTS.md.tmpl               the source of truth, incl. Standards (with placeholders)

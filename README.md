@@ -79,9 +79,36 @@ full design.
 ## Options
 `setup.sh [TARGET_DIR] [--agents=…] [--claude-model=…] [--codex-model=…]
 [--codex-reasoning=…] [--superpowers|--no-superpowers] [--no-graphify]
+[--gitignore|--no-gitignore] [--on-conflict=prompt|backup|skip|overwrite]
 [-y|--yes] [--quiet] [--dry-run]`. Run `./setup.sh --help`.
+
+## Existing files (conflict handling)
+Re-running is safe: files the kit created before are updated in place (tracked in
+`.ai-dev-kit-manifest`). If a file the kit would write **already exists and you
+created it**, `--on-conflict` decides what happens:
+
+| Policy | Behavior |
+|---|---|
+| `prompt` (default) | Ask per file. `--yes` treats this as `backup`. |
+| `backup` | Save your copy to `<file>.adk-bak`, then write the kit version (restorable). |
+| `skip` | Keep yours; don't write the kit version. |
+| `overwrite` | Replace yours with no backup. |
+
+`AGENTS.md` is never overwritten (it's yours); `CLAUDE.md` is merged
+(your content is preserved below the `@AGENTS.md` import).
+
+## Uninstall
+Reverse everything the kit added to a project:
+```bash
+~/.ai-dev-kit/uninstall.sh .            # restores backups, removes kit files, cleans .gitignore
+~/.ai-dev-kit/uninstall.sh . --dry-run  # preview
+~/.ai-dev-kit/uninstall.sh . --with-superpowers --with-graphify   # also remove the global tools
+```
+It restores any `*.adk-bak` (your originals), removes only files in the manifest,
+strips the kit's `.gitignore` block (leaving your lines), and removes the kit's
+global Codex prompts. Without a manifest it does a best-effort cleanup and never
+deletes a pre-existing `AGENTS.md`.
 
 ## Safe to re-run
 Installs are gated on `command -v`; generated content lives in marker blocks that
-are replaced (not duplicated); any pre-existing file is backed up once to
-`*.adk-bak`. Try `./setup.sh . --dry-run` to preview.
+are replaced (not duplicated). Try `./setup.sh . --dry-run` to preview.

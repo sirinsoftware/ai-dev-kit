@@ -19,6 +19,9 @@ CODEX_MODEL="gpt-5.5"
 CODEX_REASONING="high"
 WANT_SUPERPOWERS_ARG="ask"          # ask | yes | no
 NO_GRAPHIFY=""
+GITIGNORE_GENERATED=""
+NO_GITIGNORE=""
+ON_CONFLICT="prompt"            # prompt | backup | skip | overwrite
 SUPERPOWERS_REPO="https://github.com/obra/superpowers"
 SUPERPOWERS_MARKETPLACE="obra/superpowers-marketplace"
 
@@ -38,6 +41,10 @@ Options:
   --superpowers               Install Superpowers without asking
   --no-superpowers            Never install Superpowers
   --no-graphify               Skip graphify install + graph build
+  --gitignore                 Add the generated files to .gitignore (keep them local)
+  --no-gitignore              Don't add generated files to .gitignore (and don't prompt)
+  --on-conflict=POLICY        When a file you already have collides: prompt | backup |
+                              skip | overwrite (default: prompt; --yes treats it as backup)
   -y, --yes                   Non-interactive; accept all defaults
   --quiet                     Reduce log output
   --dry-run                   Print planned actions; write/install nothing
@@ -55,6 +62,9 @@ while [ $# -gt 0 ]; do
     --superpowers)        WANT_SUPERPOWERS_ARG="yes" ;;
     --no-superpowers)     WANT_SUPERPOWERS_ARG="no" ;;
     --no-graphify)        NO_GRAPHIFY=1 ;;
+    --gitignore)          GITIGNORE_GENERATED=1 ;;
+    --no-gitignore)       NO_GITIGNORE=1 ;;
+    --on-conflict=*)      ON_CONFLICT="${1#*=}" ;;
     -y|--yes)             ASSUME_YES=1 ;;
     --quiet)              QUIET=1 ;;
     --dry-run)            DRY_RUN=1 ;;
@@ -73,7 +83,12 @@ for f in log detect prompt idempotent \
 done
 
 export ASSUME_YES QUIET DRY_RUN CLAUDE_MODEL CODEX_MODEL CODEX_REASONING \
-       SUPERPOWERS_REPO SUPERPOWERS_MARKETPLACE
+       GITIGNORE_GENERATED ON_CONFLICT SUPERPOWERS_REPO SUPERPOWERS_MARKETPLACE
+
+case "$ON_CONFLICT" in
+  prompt|backup|skip|overwrite) ;;
+  *) die "Invalid --on-conflict='$ON_CONFLICT' (use: prompt | backup | skip | overwrite)" ;;
+esac
 
 # ---- selection helpers ----------------------------------------------------
 choose_agents() {
@@ -114,10 +129,20 @@ decide_superpowers() {
   export WANT_SUPERPOWERS
 }
 
+decide_gitignore() {
+  if [ -z "${GITIGNORE_GENERATED:-}" ] && [ -z "${NO_GITIGNORE:-}" ]; then
+    if confirm "Add the generated files to .gitignore (keep them out of version control)?" n; then
+      GITIGNORE_GENERATED=1
+    fi
+  fi
+  export GITIGNORE_GENERATED
+}
+
 print_summary() {
   log_step "Done"
   log_info "Target: $TARGET_DIR"
   log_info "Agents: ${EN_CLAUDE:+Claude }${EN_CODEX:+Codex }${EN_COPILOT:+Copilot}"
+  [ -n "${GITIGNORE_GENERATED:-}" ] && log_info "Mode: local — generated files were added to .gitignore."
   echo
   log_info "Next steps:"
   log_dim "1. Edit AGENTS.md - your single source of truth for all three agents."
@@ -125,6 +150,8 @@ print_summary() {
   [ -n "${EN_CODEX:-}" ]   && log_dim "3. Codex: open the project once and 'trust' it so .codex/config.toml loads."
   [ -n "${EN_COPILOT:-}" ] && log_dim "4. Copilot: pick the model in the task model-picker; commit copilot-setup-steps.yml to the DEFAULT branch."
   log_dim "5. Keep the graph fresh after edits: graphify update ."
+  echo
+  log_dim "To undo everything ai-dev-kit added here: $ADK_ROOT/uninstall.sh \"$TARGET_DIR\""
 }
 
 # ---- main -----------------------------------------------------------------
@@ -140,6 +167,7 @@ main() {
   [ -n "${EN_CLAUDE:-}${EN_CODEX:-}${EN_COPILOT:-}" ] || die "No agents selected; nothing to do."
   choose_models
   decide_superpowers
+  decide_gitignore
 
   if [ -n "${EN_CLAUDE:-}" ]; then
     if is_dry; then log_info "[dry] configure Claude Code (superpowers=${WANT_SUPERPOWERS:-no})"; else configure_claude; fi

@@ -23,7 +23,7 @@ ensure_line_in_file() {
 # render_template <src> <dest>
 #   Copies <src> to <dest>, substituting @@VAR@@ tokens from a fixed allow-list of
 #   environment variables. User-facing {{PLACEHOLDERS}} are deliberately left intact.
-#   Existing <dest> is backed up once, then overwritten (managed file).
+#   Existing <dest> is overwritten (callers gate writes + handle conflict backups).
 render_template() {
   local src="$1" dest="$2" tmp v val esc
   [ -f "$src" ] || { log_warn "template missing: $src"; return 1; }
@@ -37,7 +37,6 @@ render_template() {
     sed "s|@@${v}@@|${esc}|g" "$tmp" > "$tmp.new" && mv "$tmp.new" "$tmp"
   done
   mkdir -p "$(dirname "$dest")"
-  [ -f "$dest" ] && backup_once "$dest"
   mv "$tmp" "$dest"
   trap - RETURN
 }
@@ -58,7 +57,7 @@ upsert_block() {
     begin="$open >>> ai-dev-kit:$id >>>"
     end="$open <<< ai-dev-kit:$id <<<"
   fi
-  mkdir -p "$(dirname "$file")"; touch "$file"; backup_once "$file"
+  mkdir -p "$(dirname "$file")"; touch "$file"
   tmp="$(mktemp)"
   if grep -qF -- "$begin" "$file"; then
     awk -v b="$begin" -v e="$end" -v cf="$cfile" '
@@ -76,4 +75,27 @@ upsert_block() {
   mv "$tmp" "$file"
   rm -f "$cfile"
   trap - RETURN
+}
+
+# remove_block <file> <id> [open_comment] [close_comment]
+#   Delete a marker-delimited block (and its markers) written by upsert_block.
+#   No-op if the file or block is absent.
+remove_block() {
+  local file="$1" id="$2" open="${3:-#}" close="${4:-}" begin end tmp
+  [ -f "$file" ] || return 0
+  if [ -n "$close" ]; then
+    begin="$open >>> ai-dev-kit:$id >>> $close"
+    end="$open <<< ai-dev-kit:$id <<< $close"
+  else
+    begin="$open >>> ai-dev-kit:$id >>>"
+    end="$open <<< ai-dev-kit:$id <<<"
+  fi
+  grep -qF -- "$begin" "$file" || return 0
+  tmp="$(mktemp)"
+  awk -v b="$begin" -v e="$end" '
+    $0==b {inb=1; next}
+    $0==e {inb=0; next}
+    !inb {print}
+  ' "$file" > "$tmp"
+  mv "$tmp" "$file"
 }
