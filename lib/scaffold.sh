@@ -3,8 +3,9 @@
 [ -n "${_ADK_SCAFFOLD_SOURCED:-}" ] && return 0
 _ADK_SCAFFOLD_SOURCED=1
 
-# The reusable commands shipped as native slash commands per tool.
-ADK_COMMANDS="pr-review progress-report deep-test repeatable-task"
+# Reusable commands list (single source of truth, shared with uninstall.sh).
+# shellcheck source=/dev/null
+. "$ADK_ROOT/lib/commands.sh"
 
 # ---- manifest + conflict handling ----------------------------------------
 # The manifest (.ai-dev-kit-manifest) lists the project-relative paths the kit
@@ -22,7 +23,9 @@ _kit_owns() {
   printf '%s\n' "$_PRIOR_MANIFEST" | grep -qxF -- "$1"
 }
 
-record_manifest() { printf '%s\n' "$1" >> "$(_manifest)"; }
+record_manifest() {
+  grep -qxF -- "$1" "$(_manifest)" 2>/dev/null || printf '%s\n' "$1" >> "$(_manifest)"
+}
 
 # should_write <abs> <rel> : decide whether to (over)write a managed file.
 #   - no existing file            -> write
@@ -53,6 +56,7 @@ _cmd_desc() {
     progress-report) echo "Generate a project progress report for a given period." ;;
     deep-test)       echo "Design and run an in-depth testing algorithm for a target." ;;
     repeatable-task) echo "Turn a recurring task into a deterministic, repeatable runbook." ;;
+    security-audit)  echo "Security review of a diff/area in this session (no API key)." ;;
     *)               echo "ai-dev-kit command." ;;
   esac
 }
@@ -63,6 +67,7 @@ _cmd_hint() {
     progress-report) echo "period, e.g. 'this week'" ;;
     deep-test)       echo "file / module / feature to test" ;;
     repeatable-task) echo "task to codify" ;;
+    security-audit)  echo "PR ref / path (default: current diff)" ;;
     *)               echo "argument" ;;
   esac
 }
@@ -144,6 +149,7 @@ gitignore_step() {
     echo ".claude/settings.local.json"
     echo "*.adk-bak"
     echo ".ai-dev-kit-manifest"
+    echo ".ai-dev-kit-mcp"
     if [ -n "${GITIGNORE_GENERATED:-}" ]; then
       while IFS= read -r line; do
         [ -n "$line" ] && echo "/$line"
@@ -152,6 +158,36 @@ gitignore_step() {
   } | upsert_block "$gi" "gitignore"
   if [ -n "${GITIGNORE_GENERATED:-}" ]; then log_info "Local mode: generated files added to .gitignore."; fi
   return 0
+}
+
+# Optional tools (opt-in, gated by WANT_* flags). MCP servers go to every enabled
+# agent; guardrail hooks are Claude-only.
+scaffold_extras() {
+  local any=""
+  if [ -n "${WANT_GREP_MCP:-}" ]; then register_mcp grep http https://mcp.grep.app; any=1; fi
+  if [ -n "${WANT_JOURNAL:-}" ]; then register_mcp private-journal stdio npx github:obra/private-journal-mcp; any=1; fi
+  if [ -n "${WANT_SERENA:-}" ]; then register_mcp serena stdio uvx --from git+https://github.com/oraios/serena serena-mcp-server --context ide-assistant; any=1; fi
+  if [ -n "$any" ]; then
+    log_success "MCP servers registered for:${EN_CLAUDE:+ Claude}${EN_CODEX:+ Codex}${EN_COPILOT:+ Copilot}"
+  fi
+  if [ -n "${WANT_HOOKS:-}" ] && [ -n "${EN_CLAUDE:-}" ]; then scaffold_hooks; fi
+  return 0
+}
+
+# Claude-only deterministic guardrail hooks (deny secrets / dangerous shell commands).
+scaffold_hooks() {
+  has_cmd python3 || { log_warn "python3 not found - skipping Claude guardrail hooks."; return 0; }
+  mkdir -p "$TARGET_DIR/.claude/hooks"
+  cp "$ADK_ROOT/templates/claude/hooks/guard-bash.py"  "$TARGET_DIR/.claude/hooks/guard-bash.py"
+  cp "$ADK_ROOT/templates/claude/hooks/guard-paths.py" "$TARGET_DIR/.claude/hooks/guard-paths.py"
+  chmod +x "$TARGET_DIR/.claude/hooks/guard-bash.py" "$TARGET_DIR/.claude/hooks/guard-paths.py" 2>/dev/null || true
+  record_manifest ".claude/hooks/guard-bash.py"
+  record_manifest ".claude/hooks/guard-paths.py"
+  if python3 "$ADK_ROOT/lib/hooks_merge.py" "$TARGET_DIR/.claude/settings.json"; then
+    log_success "Claude guardrail hooks -> .claude/hooks/ + settings.json (deny secrets / dangerous cmds)"
+  else
+    log_warn "Could not merge hooks into .claude/settings.json."
+  fi
 }
 
 # Ensure CLAUDE.md exists with `@AGENTS.md` as its first line, then a managed notes
@@ -184,6 +220,7 @@ scaffold_project() {
 
   _load_prior_manifest
   : > "$(_manifest)"          # fresh manifest; we append each path we actually write
+  rm -f "$TARGET_DIR/.ai-dev-kit-mcp"   # fresh MCP ledger; recreated on demand
 
   # 1. AGENTS.md - single source of truth (incl. Standards). Never clobber an existing one.
   if [ ! -f "$TARGET_DIR/AGENTS.md" ]; then
@@ -230,7 +267,10 @@ scaffold_project() {
   # 5. Reusable commands (native slash commands per enabled tool)
   scaffold_commands
 
-  # 6. .gitignore (managed block; honors --gitignore local mode)
+  # 6. Optional tools (MCP servers + Claude guardrail hooks), gated by WANT_* flags
+  scaffold_extras
+
+  # 7. .gitignore (managed block; honors --gitignore local mode)
   gitignore_step
   return 0
 }

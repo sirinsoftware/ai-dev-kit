@@ -77,11 +77,31 @@ extra tools (graphify/Superpowers-class) you can add.
    model in the task model-picker.
 4. After code changes: `graphify update .`
 
+## Optional tools (opt-in)
+Beyond graphify + Superpowers, setup can wire these in (prompted, or via flags) —
+all reversible by `uninstall.sh`. See [`docs/related-tools.md`](docs/related-tools.md)
+for the full vetted catalog and rationale.
+
+| Flag | Adds |
+|---|---|
+| `--with-ast-grep` | **ast-grep** CLI — structural search + safe codemods (graphify can't rewrite) |
+| `--with-grep` | **Grep MCP** — search ~1M public repos for real-world usage |
+| `--with-journal` | **private-journal** MCP — cross-session memory |
+| `--with-serena` | **Serena** MCP — live LSP symbol nav + edits (needs `uv` at runtime) |
+| `--with-hooks` | **Claude guardrail hooks** — deny secret-file reads / dangerous shell cmds |
+| `--with-all-extras` | all of the above |
+
+MCP servers are written into each enabled agent's config (`.mcp.json` /
+`.codex/config.toml` / `.vscode/mcp.json`). Security review needs no API key: use the
+cross-agent `/security-audit` command (always installed) or Claude's built-in
+`/security-review` — both run on your existing plan.
+
 ## Options
 `setup.sh [TARGET_DIR] [--agents=…] [--claude-model=…] [--codex-model=…]
 [--codex-reasoning=…] [--superpowers|--no-superpowers] [--no-graphify]
 [--gitignore|--no-gitignore] [--on-conflict=prompt|backup|skip|overwrite]
-[-y|--yes] [--quiet] [--dry-run]`. Run `./setup.sh --help`.
+[--with-ast-grep] [--with-grep] [--with-journal] [--with-serena] [--with-hooks]
+[--with-all-extras] [--no-extras] [-y|--yes] [--quiet] [--dry-run]`. Run `./setup.sh --help`.
 
 ## Existing files (conflict handling)
 Re-running is safe: files the kit created before are updated in place (tracked in

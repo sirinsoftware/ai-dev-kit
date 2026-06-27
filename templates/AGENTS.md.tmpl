@@ -74,8 +74,10 @@ ai-dev-kit installs these as native slash commands (where you enabled them):
 | `progress-report <period>`| project progress report | `/progress-report` · `/prompts:progress-report` |
 | `deep-test <target>`      | design + run an in-depth testing algorithm | `/deep-test` · `/prompts:deep-test` |
 | `repeatable-task <task>`  | turn a recurring chore into a runbook | `/repeatable-task` · `/prompts:repeatable-task` |
+| `security-audit <ref>`    | security review of a diff/area (no API key) | `/security-audit` · `/prompts:security-audit` |
 
 (Copilot prompt files work in IDE chat only — the Copilot cloud agent follows this file instead.)
+For Claude, the built-in `/security-review` also works on your Claude plan (no API key).
 
 ## Codebase knowledge graph (graphify)
 When a graph exists (`graphify-out/graph.json`):
@@ -83,6 +85,14 @@ When a graph exists (`graphify-out/graph.json`):
 - relationship between two things → `graphify path "<A>" "<B>"`
 - focus on one concept → `graphify explain "<concept>"`
 - Prefer these over broad grep/file dumps. After changing code, run `graphify update .`.
+
+## Optional tooling (use when configured)
+- **ast-grep** (if installed) for exact structural search and safe codemods:
+  `ast-grep -p '<pattern>' -l <lang>` (rewrite with `-r '<replacement>'`). Prefer it
+  over regex for structure-aware matches/refactors; use graphify to orient first.
+- **MCP servers** (if configured in `.mcp.json` / `.codex/config.toml` / `.vscode/mcp.json`):
+  Context7 for up-to-date library docs, Grep for real-world usage across public repos,
+  private-journal for cross-session memory, Serena for live symbol nav/edits.
 
 ## Guardrails
 - Don't push, open PRs, or run destructive commands unless explicitly asked.

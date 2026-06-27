@@ -30,11 +30,21 @@ print summary.
 setup.sh / bootstrap.sh        entry points (configure a project)
 uninstall.sh                   reverse setup for a project (restore/remove)
 lib/*.sh                       helpers + per-agent configure modules + scaffolding
+  commands.sh                  the shared command list (used by scaffold + uninstall)
+  mcp.sh + mcp_upsert.py       register MCP servers per agent (opt-in tools)
+  install_ast_grep.sh          ast-grep CLI installer (opt-in)
+  hooks_merge.py               merge Claude guardrail hooks into settings.json (opt-in)
 templates/                     files rendered into the target project
   AGENTS.md.tmpl               the source of truth, incl. Standards (with placeholders)
   claude/ codex/ copilot/      per-agent config templates
+  claude/hooks/*.py            guardrail hook scripts (deny secrets / dangerous cmds)
   commands/                    reusable command bodies → native slash commands per tool
-docs/                          this design, the SoT matrix, Superpowers notes
+docs/                          this design, the SoT matrix, Superpowers notes, related-tools
+examples/filled/               a worked example
+
+Optional tools (ast-grep, Grep/journal/Serena MCP, Claude hooks) are opt-in via
+`--with-*` flags / prompt; MCP additions are tracked in `.ai-dev-kit-mcp` so
+uninstall removes exactly the kit's entries (preserving your other MCP servers).
 examples/filled/               a worked example
 ```
 

@@ -22,6 +22,7 @@ NO_GRAPHIFY=""
 GITIGNORE_GENERATED=""
 NO_GITIGNORE=""
 ON_CONFLICT="prompt"            # prompt | backup | skip | overwrite
+WANT_ASTGREP=""; WANT_GREP_MCP=""; WANT_JOURNAL=""; WANT_SERENA=""; WANT_HOOKS=""; NO_EXTRAS=""
 SUPERPOWERS_REPO="https://github.com/obra/superpowers"
 SUPERPOWERS_MARKETPLACE="obra/superpowers-marketplace"
 
@@ -45,6 +46,13 @@ Options:
   --no-gitignore              Don't add generated files to .gitignore (and don't prompt)
   --on-conflict=POLICY        When a file you already have collides: prompt | backup |
                               skip | overwrite (default: prompt; --yes treats it as backup)
+  --with-ast-grep             Install ast-grep (structural search + codemods)
+  --with-grep                 Add Grep MCP (search ~1M public repos for usage)
+  --with-journal              Add private-journal MCP (cross-session memory)
+  --with-serena               Add Serena MCP (semantic LSP code nav; needs uv at runtime)
+  --with-hooks                Add Claude guardrail hooks (deny secrets/dangerous cmds)
+  --with-all-extras           Enable all of the optional tools above
+  --no-extras                 Don't prompt for optional tools
   -y, --yes                   Non-interactive; accept all defaults
   --quiet                     Reduce log output
   --dry-run                   Print planned actions; write/install nothing
@@ -65,6 +73,13 @@ while [ $# -gt 0 ]; do
     --gitignore)          GITIGNORE_GENERATED=1 ;;
     --no-gitignore)       NO_GITIGNORE=1 ;;
     --on-conflict=*)      ON_CONFLICT="${1#*=}" ;;
+    --with-ast-grep)      WANT_ASTGREP=1 ;;
+    --with-grep)          WANT_GREP_MCP=1 ;;
+    --with-journal)       WANT_JOURNAL=1 ;;
+    --with-serena)        WANT_SERENA=1 ;;
+    --with-hooks)         WANT_HOOKS=1 ;;
+    --with-all-extras)    WANT_ASTGREP=1; WANT_GREP_MCP=1; WANT_JOURNAL=1; WANT_SERENA=1; WANT_HOOKS=1 ;;
+    --no-extras)          NO_EXTRAS=1 ;;
     -y|--yes)             ASSUME_YES=1 ;;
     --quiet)              QUIET=1 ;;
     --dry-run)            DRY_RUN=1 ;;
@@ -76,14 +91,16 @@ while [ $# -gt 0 ]; do
 done
 
 # ---- source libraries -----------------------------------------------------
-for f in log detect prompt idempotent \
-         configure_claude configure_codex configure_copilot install_graphify scaffold; do
+for f in log detect prompt idempotent mcp \
+         configure_claude configure_codex configure_copilot \
+         install_graphify install_ast_grep scaffold; do
   # shellcheck source=/dev/null
   . "$ADK_ROOT/lib/$f.sh"
 done
 
 export ASSUME_YES QUIET DRY_RUN CLAUDE_MODEL CODEX_MODEL CODEX_REASONING \
-       GITIGNORE_GENERATED ON_CONFLICT SUPERPOWERS_REPO SUPERPOWERS_MARKETPLACE
+       GITIGNORE_GENERATED ON_CONFLICT SUPERPOWERS_REPO SUPERPOWERS_MARKETPLACE \
+       WANT_ASTGREP WANT_GREP_MCP WANT_JOURNAL WANT_SERENA WANT_HOOKS
 
 case "$ON_CONFLICT" in
   prompt|backup|skip|overwrite) ;;
@@ -138,11 +155,29 @@ decide_gitignore() {
   export GITIGNORE_GENERATED
 }
 
+decide_extras() {
+  local have="${WANT_ASTGREP:-}${WANT_GREP_MCP:-}${WANT_JOURNAL:-}${WANT_SERENA:-}${WANT_HOOKS:-}"
+  if [ -z "$have" ] && [ -z "$NO_EXTRAS" ] && [ -z "$ASSUME_YES" ]; then
+    if confirm "Set up optional tools (ast-grep, Grep MCP, private-journal, Serena, guardrail hooks)?" n; then
+      confirm "  ast-grep - structural search + codemods?"            y && WANT_ASTGREP=1  || true
+      confirm "  Grep MCP - search ~1M public repos for usage?"        y && WANT_GREP_MCP=1 || true
+      confirm "  private-journal - cross-session memory?"             n && WANT_JOURNAL=1  || true
+      confirm "  Serena - semantic LSP code MCP (heavier; needs uv)?" n && WANT_SERENA=1   || true
+      [ -n "${EN_CLAUDE:-}" ] && { confirm "  Claude guardrail hooks - deny secrets/dangerous cmds?" y && WANT_HOOKS=1 || true; }
+    fi
+  fi
+  export WANT_ASTGREP WANT_GREP_MCP WANT_JOURNAL WANT_SERENA WANT_HOOKS
+}
+
 print_summary() {
   log_step "Done"
   log_info "Target: $TARGET_DIR"
   log_info "Agents: ${EN_CLAUDE:+Claude }${EN_CODEX:+Codex }${EN_COPILOT:+Copilot}"
   [ -n "${GITIGNORE_GENERATED:-}" ] && log_info "Mode: local — generated files were added to .gitignore."
+  if [ -n "${WANT_ASTGREP:-}${WANT_GREP_MCP:-}${WANT_JOURNAL:-}${WANT_SERENA:-}${WANT_HOOKS:-}" ]; then
+    log_info "Optional tools:${WANT_ASTGREP:+ ast-grep}${WANT_GREP_MCP:+ grep-mcp}${WANT_JOURNAL:+ journal}${WANT_SERENA:+ serena}${WANT_HOOKS:+ hooks}"
+    [ -n "${WANT_GREP_MCP:-}${WANT_JOURNAL:-}${WANT_SERENA:-}" ] && log_dim "MCP servers were added to your agent config(s) — restart/reload the agent to load them."
+  fi
   echo
   log_info "Next steps:"
   log_dim "1. Edit AGENTS.md - your single source of truth for all three agents."
@@ -168,6 +203,7 @@ main() {
   choose_models
   decide_superpowers
   decide_gitignore
+  decide_extras
 
   if [ -n "${EN_CLAUDE:-}" ]; then
     if is_dry; then log_info "[dry] configure Claude Code (superpowers=${WANT_SUPERPOWERS:-no})"; else configure_claude; fi
@@ -183,7 +219,18 @@ main() {
     if is_dry; then log_info "[dry] install graphify + build graph"; else install_graphify; fi
   fi
 
-  if is_dry; then log_info "[dry] scaffold AGENTS.md + per-agent config + slash commands"; else scaffold_project; fi
+  if [ -n "${WANT_ASTGREP:-}" ]; then
+    if is_dry; then log_info "[dry] install ast-grep"; else install_ast_grep; fi
+  fi
+  if [ -n "${WANT_SERENA:-}" ] && ! has_cmd uv && ! is_dry; then
+    log_warn "Serena MCP launches via 'uvx' — install uv so it works at agent runtime."
+  fi
+
+  if is_dry; then
+    log_info "[dry] scaffold AGENTS.md + per-agent config + slash commands${WANT_GREP_MCP:+ + Grep MCP}${WANT_JOURNAL:+ + journal MCP}${WANT_SERENA:+ + Serena MCP}${WANT_HOOKS:+ + hooks}"
+  else
+    scaffold_project
+  fi
 
   print_summary
 }

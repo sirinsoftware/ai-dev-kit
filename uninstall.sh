@@ -19,7 +19,6 @@ TARGET_DIR="$(pwd)"
 ASSUME_YES=""; QUIET=""; DRY_RUN=""
 WITH_SUPERPOWERS=""; WITH_GRAPHIFY=""
 SUPERPOWERS_MARKETPLACE="obra/superpowers-marketplace"
-ADK_COMMANDS="pr-review progress-report deep-test repeatable-task"
 
 usage() {
   cat <<'EOF'
@@ -56,7 +55,7 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-for f in log detect prompt idempotent; do
+for f in log detect prompt idempotent commands; do
   # shellcheck source=/dev/null
   . "$ADK_ROOT/lib/$f.sh"
 done
@@ -137,6 +136,29 @@ remove_codex_prompts() {
   done
 }
 
+# Remove the MCP server entries the kit added, from .ai-dev-kit-mcp ledger:
+#   JSON files (.mcp.json / .vscode/mcp.json): remove just our server key (keep user's).
+#   Codex config.toml: remove our managed [mcp_servers.<name>] block.
+remove_mcp() {
+  local sc="$TARGET_DIR/.ai-dev-kit-mcp" file root name
+  [ -f "$sc" ] || return 0
+  while IFS='|' read -r file root name; do
+    [ -n "$file" ] && [ -n "$name" ] || continue
+    case "$file" in /*|*..*) log_warn "skipping unsafe MCP path: '$file'"; continue ;; esac
+    if [ "$root" = toml ]; then
+      if is_dry; then log_info "[dry] remove Codex MCP block 'mcp-$name'"
+      else remove_block "$TARGET_DIR/$file" "mcp-$name"; log_success "removed Codex MCP '$name'"; fi
+    else
+      if is_dry; then log_info "[dry] remove MCP '$name' from $file"
+      elif [ -f "$TARGET_DIR/$file" ] && has_cmd python3; then
+        python3 "$ADK_ROOT/lib/mcp_upsert.py" "$TARGET_DIR/$file" "$root" remove "$name" \
+          && log_success "removed MCP '$name' from $file" || log_warn "couldn't edit $file"
+      fi
+    fi
+  done < "$sc"
+  is_dry || rm -f "$sc"
+}
+
 clean_gitignore() {
   local gi="$TARGET_DIR/.gitignore"
   [ -f "$gi" ] || return 0
@@ -200,6 +222,7 @@ main() {
     confirm "Remove ai-dev-kit's files from this project?" n || die "Aborted."
   fi
 
+  remove_mcp
   remove_project_files
   remove_codex_prompts
   remove_graphify_out

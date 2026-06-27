@@ -4,11 +4,17 @@ Tools in the spirit of **graphify** (codebase intelligence) and **Superpowers**
 (dev methodology) that fit ai-dev-kit's model: installable per agent
 (Claude Code / Codex / Copilot), cross-agent where possible.
 
-> Verified mid-2026 against primary sources (each tool's own repo / docs). Nothing
-> here is wired into `setup.sh` — this is a reference list. The kit already
-> integrates [graphify](https://pypi.org/project/graphifyy/),
+> Verified mid-2026 against primary sources (each tool's own repo / docs). The kit
+> already integrates [graphify](https://pypi.org/project/graphifyy/),
 > [Superpowers](https://github.com/obra/superpowers), and the
 > [AGENTS.md](https://agents.md/) standard.
+
+**Now wired into setup as opt-in flags** (reversible via `uninstall.sh`):
+`--with-ast-grep`, `--with-grep` (Grep MCP), `--with-journal` (private-journal),
+`--with-serena`, `--with-hooks` (Claude guardrails); plus an always-installed
+cross-agent `/security-audit` command (no API key). **Context7** is left to add
+manually (one MCP entry) — not every project has fast-moving deps. Everything else
+below is reference/optional.
 
 **Fit legend:** ⭐ strong add · ◯ optional/opt-in · ⛔ skip (why).
 
