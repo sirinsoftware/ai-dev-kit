@@ -65,8 +65,9 @@ place, and every tool and command picks them up.
 > (installed **user-globally** to `~/.codex/prompts/`; restart Codex to see them).
 
 See [`docs/single-source-of-truth.md`](docs/single-source-of-truth.md) for exactly
-how each agent reads its config, and [`docs/DESIGN.md`](docs/DESIGN.md) for the
-full design.
+how each agent reads its config, [`docs/DESIGN.md`](docs/DESIGN.md) for the full
+design, and [`docs/related-tools.md`](docs/related-tools.md) for a vetted catalog of
+extra tools (graphify/Superpowers-class) you can add.
 
 ## After setup
 1. Fill in `AGENTS.md`, including its **Standards** section (code/commit/PR rules,
