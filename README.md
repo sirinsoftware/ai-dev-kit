@@ -7,8 +7,9 @@ models), **OpenAI Codex** (GPT models), and the **GitHub Copilot** cloud agent
 One `AGENTS.md` drives all three agents. The setup script verifies the agent CLIs
 you choose are present, optionally installs [Superpowers](docs/superpowers.md) per
 agent, installs [graphify](https://pypi.org/project/graphifyy/) and builds a code
-knowledge graph, and scaffolds each agent's native config plus a reusable prompt
-library.
+knowledge graph, and scaffolds each agent's native config plus a set of reusable
+**slash commands** (`/pr-review`, `/progress-report`, `/deep-test`,
+`/repeatable-task`).
 
 > **Prerequisites:** the Claude Code, Codex, and/or Copilot CLIs you plan to use
 > are assumed already installed — the script verifies them and warns if one is
@@ -49,15 +50,27 @@ install Superpowers and build the graph. Non-interactive:
 | `.codex/config.toml`                          | Codex    | model + reasoning effort |
 | `.github/copilot-instructions.md`             | Copilot  | pointer to `AGENTS.md` |
 | `.github/workflows/copilot-setup-steps.yml`   | Copilot  | cloud-agent environment |
-| `docs/ai-prompts/*`                           | all      | reusable prompt library |
+| `.claude/commands/*.md`                       | Claude   | slash commands → `/pr-review` … |
+| `.github/prompts/*.prompt.md`                 | Copilot  | IDE-chat prompts → `/pr-review` … |
+| `~/.codex/prompts/*.md`                        | Codex    | **user-global** prompts → `/prompts:pr-review` … |
 | `.gitignore` (appended)                       | —        | ignores `graphify-out/`, `*.local.*`, backups |
+
+The Standards (code/commit/PR rules, static-analysis tools, tests, real-device
+script) live in the **`AGENTS.md`** Standards section — fill them in there, in one
+place, and every tool and command picks them up.
+
+> **Commands by tool.** Claude Code: `/pr-review` (`.claude/commands/`). Copilot:
+> `/pr-review` in **IDE chat** (`.github/prompts/` — the Copilot *cloud* agent does
+> not read prompt files; it follows `AGENTS.md`). Codex: `/prompts:pr-review`
+> (installed **user-globally** to `~/.codex/prompts/`; restart Codex to see them).
 
 See [`docs/single-source-of-truth.md`](docs/single-source-of-truth.md) for exactly
 how each agent reads its config, and [`docs/DESIGN.md`](docs/DESIGN.md) for the
 full design.
 
 ## After setup
-1. Fill in `AGENTS.md` and `docs/ai-prompts/00-standards.md`.
+1. Fill in `AGENTS.md`, including its **Standards** section (code/commit/PR rules,
+   tools, tests, real-device script). The commands reference it.
 2. Codex: open the project once and **trust** it so `.codex/config.toml` loads.
 3. Copilot: commit `copilot-setup-steps.yml` to the **default branch**; pick the
    model in the task model-picker.

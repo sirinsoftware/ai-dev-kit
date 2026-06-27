@@ -16,39 +16,73 @@
 <!-- Languages, frameworks, package manager, entry points, important directories. -->
 {{TECH_STACK}}
 
-## Standards (read before writing code)
-The detailed, enforceable standards live in **`docs/ai-prompts/00-standards.md`** —
-code style, commit messages, PR rules, static-analysis tools, and how to run tests.
-Read that file and follow it. Key rules in brief:
+## Standards
+Follow these when writing code, committing, and opening PRs.
 
-- {{TOP_CODE_RULES}}
-- Commits follow the convention in `00-standards.md` (do not invent your own).
+### Code
+<!-- Style, naming, file organization, error handling, language version, what to avoid. -->
+{{CODE_STANDARDS}}
+- Formatter / style command: `{{FORMAT_COMMAND}}`
 - Never commit secrets, generated artifacts, or `graphify-out/`.
+
+### Commit messages
+<!-- e.g. Conventional Commits: type(scope): summary. Give an example. -->
+{{COMMIT_STANDARDS}}
+
+### Pull requests
+<!-- Title format, size limits, required checks, when to split. -->
+{{PR_STANDARDS}}
+
+PR description format (used by `/pr-review`):
+```
+{{PR_DESCRIPTION_FORMAT}}
+```
+
+### Static analysis — run and pass before opening a PR
+- Lint: `{{LINT_COMMAND}}`
+- Type check: `{{TYPECHECK_COMMAND}}`
+- Security: `{{SECURITY_SCAN_COMMAND}}`
+
+### Tests
+- Run the suite: `{{TEST_COMMAND}}`
+- Coverage target: {{COVERAGE_TARGET}}
+
+### Real device / environment
+<!-- Hardware, emulator, staging env, or device farm + how to run there. -->
+{{REAL_DEVICE_NOTES}}
+- Run on real device/environment: `{{REAL_DEVICE_TEST_SCRIPT}}`
+- Prerequisites: {{REAL_DEVICE_PREREQS}}
 
 ## Development workflow
 Work in this order — do not skip ahead to coding:
+1. **Brainstorm / clarify** the goal and surface ambiguities; propose a short design.
+2. **Plan** the work as small, independently verifiable steps.
+3. **Test-driven**: write or update a failing test, make it pass, then refactor.
+4. **Debug systematically**: find the root cause; don't patch symptoms.
+5. **Self-review** the diff against the Standards above.
+6. **Verify**: run the tests/linters above and confirm the change actually works.
 
-1. **Brainstorm / clarify.** Restate the goal and surface ambiguities before editing.
-   Propose a short design and get agreement on anything non-trivial.
-2. **Plan.** Break the work into small, independently verifiable steps.
-3. **Test-driven.** Write or update a failing test, make it pass, then refactor.
-4. **Debug systematically.** On failure, find the root cause; don't patch symptoms.
-5. **Self-review.** Re-read the diff against the standards before declaring done.
-6. **Verify.** Run the project's tests/linters (see `00-standards.md`) and confirm
-   the change actually works before claiming completion.
+> If **Superpowers** is installed it enforces this workflow with dedicated skills.
+> The Copilot cloud agent can't run plugins, so the steps above are its canonical version.
 
-> If the **Superpowers** plugin is installed (Claude Code / Codex / Copilot CLI), it
-> enforces this workflow with dedicated skills. The cloud Copilot agent can't run
-> plugins, so the steps above are the canonical version it follows.
+## Reusable commands
+ai-dev-kit installs these as native slash commands (where you enabled them):
+
+| Command | Does | Invoke |
+|---|---|---|
+| `pr-review <pr-ref>`      | review → re-review → report → fix → PR description | Claude/Copilot `/pr-review` · Codex `/prompts:pr-review` |
+| `progress-report <period>`| project progress report | `/progress-report` · `/prompts:progress-report` |
+| `deep-test <target>`      | design + run an in-depth testing algorithm | `/deep-test` · `/prompts:deep-test` |
+| `repeatable-task <task>`  | turn a recurring chore into a runbook | `/repeatable-task` · `/prompts:repeatable-task` |
+
+(Copilot prompt files work in IDE chat only — the Copilot cloud agent follows this file instead.)
 
 ## Codebase knowledge graph (graphify)
-This repo can be indexed with **graphify**. When a graph exists (`graphify-out/graph.json`):
-
-- For "how does X work / what calls Y / trace this flow" → `graphify query "<question>"`.
-- For a relationship between two things → `graphify path "<A>" "<B>"`.
-- To focus on one concept → `graphify explain "<concept>"`.
-- Prefer these over broad grep/file dumps; they return a small scoped subgraph.
-- After changing code, run `graphify update .` to keep the graph current.
+When a graph exists (`graphify-out/graph.json`):
+- "how does X work / what calls Y / trace this flow" → `graphify query "<question>"`
+- relationship between two things → `graphify path "<A>" "<B>"`
+- focus on one concept → `graphify explain "<concept>"`
+- Prefer these over broad grep/file dumps. After changing code, run `graphify update .`.
 
 ## Guardrails
 - Don't push, open PRs, or run destructive commands unless explicitly asked.

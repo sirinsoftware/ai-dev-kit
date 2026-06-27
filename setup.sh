@@ -121,7 +121,7 @@ print_summary() {
   echo
   log_info "Next steps:"
   log_dim "1. Edit AGENTS.md - your single source of truth for all three agents."
-  log_dim "2. Fill in docs/ai-prompts/00-standards.md (code/commit/PR standards, tools, tests)."
+  log_dim "2. Fill in the Standards section of AGENTS.md (code/commit/PR rules, tools, tests)."
   [ -n "${EN_CODEX:-}" ]   && log_dim "3. Codex: open the project once and 'trust' it so .codex/config.toml loads."
   [ -n "${EN_COPILOT:-}" ] && log_dim "4. Copilot: pick the model in the task model-picker; commit copilot-setup-steps.yml to the DEFAULT branch."
   log_dim "5. Keep the graph fresh after edits: graphify update ."
@@ -155,7 +155,7 @@ main() {
     if is_dry; then log_info "[dry] install graphify + build graph"; else install_graphify; fi
   fi
 
-  if is_dry; then log_info "[dry] scaffold AGENTS.md + per-agent config + prompt library"; else scaffold_project; fi
+  if is_dry; then log_info "[dry] scaffold AGENTS.md + per-agent config + slash commands"; else scaffold_project; fi
 
   print_summary
 }

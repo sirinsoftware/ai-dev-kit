@@ -13,14 +13,14 @@ committed files.
    managed marker blocks (`ai-dev-kit:<id>`) preserve user edits, files are backed
    up once to `*.adk-bak`, and `--dry-run` shows planned actions.
 3. **Explicit separation.** Shared/committed (repo files) vs. user-owned
-   (`AGENTS.md`, `00-standards.md`) vs. generated/gitignored (`graphify-out/`).
+   (`AGENTS.md`, incl. its Standards section) vs. generated/gitignored (`graphify-out/`).
 4. **No invented config.** We only write files each tool actually reads. Where a
    tool has no file (e.g. Copilot's model picker), we print guidance instead.
 
 ## Pipeline (`setup.sh`)
 detect OS/arch/pkg-mgr → choose agents + models → ask about Superpowers →
 verify selected agent CLIs are present (assumed installed) → install Superpowers
-(if chosen) → install graphify + build graph → scaffold config + prompt library →
+(if chosen) → install graphify + build graph → scaffold config + slash commands →
 print summary.
 
 ## Layout
@@ -28,9 +28,9 @@ print summary.
 setup.sh / bootstrap.sh        entry points
 lib/*.sh                       helpers + per-agent configure modules + scaffolding
 templates/                     files rendered into the target project
-  AGENTS.md.tmpl               the source of truth (with placeholders)
+  AGENTS.md.tmpl               the source of truth, incl. Standards (with placeholders)
   claude/ codex/ copilot/      per-agent config templates
-  prompts/                     the reusable prompt library (→ docs/ai-prompts/)
+  commands/                    reusable command bodies → native slash commands per tool
 docs/                          this design, the SoT matrix, Superpowers notes
 examples/filled/               a worked example
 ```
@@ -44,10 +44,10 @@ examples/filled/               a worked example
 |---|---|
 | 1. Latest Superpowers | `configure_*.sh` (prompted install) + `docs/superpowers.md` |
 | 2. graphify install + run | `lib/install_graphify.sh` |
-| 3. Standards prompts (code/commit/PR/tools/tests/device) | `templates/prompts/00-standards.md.tmpl` |
-| 4. In-depth testing & repeatable tasks | `prompts/10-algorithm-deep-test.md`, `11-repeatable-task.md` |
-| 5. PR review/re-review/report/fix/description | `prompts/20-pr-review.md` |
-| 6. Progress report | `prompts/30-progress-report.md` |
+| 3. Standards (code/commit/PR/tools/tests/device) | `AGENTS.md` → **Standards** section |
+| 4. In-depth testing & repeatable tasks | `/deep-test`, `/repeatable-task` (`templates/commands/`) |
+| 5. PR review/re-review/report/fix/description | `/pr-review` (`templates/commands/pr-review.md`) |
+| 6. Progress report | `/progress-report` (`templates/commands/progress-report.md`) |
 
 ## Known constraints
 - macOS + Linux (bash). Windows would need WSL or a Node port of `setup.sh`.
@@ -55,3 +55,8 @@ examples/filled/               a worked example
 - Copilot model availability is plan/admin-gated.
 - The rich graphify build is agent-orchestrated (`/graphify .`); the headless
   `graphify update .` (deterministic AST, no API key) is used for unattended setup.
+- Slash commands per tool: Claude `.claude/commands/*.md` (project) and Copilot
+  `.github/prompts/*.prompt.md` (project, **IDE chat only** — the Copilot cloud agent
+  ignores prompt files and follows `AGENTS.md`). Codex prompts are **user-global**
+  (`~/.codex/prompts/`, no project scope), invoked `/prompts:<name>`, and need a
+  restart; Codex is migrating prompts → skills.

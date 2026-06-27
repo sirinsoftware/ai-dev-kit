@@ -18,10 +18,12 @@ Both work. ai-dev-kit defaults to the import because:
 To prefer a symlink instead, replace `CLAUDE.md` with `ln -s AGENTS.md CLAUDE.md`.
 
 ## What's generated vs. what you own
-- **You own:** `AGENTS.md`, `docs/ai-prompts/00-standards.md`.
+- **You own:** `AGENTS.md`, including its **Standards** section (the commands read it).
 - **Generated (safe to commit, regenerated on re-run):** the one-line `CLAUDE.md`
   import + managed notes block, `.github/copilot-instructions.md`, the model lines
-  in `.claude/settings.json` and `.codex/config.toml`.
+  in `.claude/settings.json` and `.codex/config.toml`, and the slash commands
+  (`.claude/commands/*.md`, `.github/prompts/*.prompt.md`, and the user-global
+  `~/.codex/prompts/*.md`).
 - **Generated, gitignored:** `graphify-out/`, `*.local.*`, `.claude/settings.local.json`.
 
 Re-running `setup.sh` only touches its own managed blocks (marked
