@@ -1,0 +1,10 @@
+# ai-dev-kit repo hygiene
+graphify-out/
+*.adk-bak
+*.local.*
+.DS_Store
+
+# never commit secrets
+.env
+.env.*
+!.env.example

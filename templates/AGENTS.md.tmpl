@@ -1,0 +1,56 @@
+# @@PROJECT_NAME@@ — Agent instructions
+
+> Fill in every `{{PLACEHOLDER}}` below before relying on this file.
+> `@@TOKENS@@` are filled in automatically by ai-dev-kit's setup.
+
+> **Single source of truth.** Every coding agent in this repo reads these rules.
+> Codex and GitHub Copilot read this file (`AGENTS.md`) directly; Claude Code reads
+> it through the `@AGENTS.md` import on the first line of `CLAUDE.md`. Edit this one
+> file and all three stay in sync. Created with ai-dev-kit on @@ADK_DATE@@.
+
+## Project overview
+<!-- What is this project, who is it for, what does "done" look like? -->
+{{PROJECT_OVERVIEW}}
+
+## Tech stack & layout
+<!-- Languages, frameworks, package manager, entry points, important directories. -->
+{{TECH_STACK}}
+
+## Standards (read before writing code)
+The detailed, enforceable standards live in **`docs/ai-prompts/00-standards.md`** —
+code style, commit messages, PR rules, static-analysis tools, and how to run tests.
+Read that file and follow it. Key rules in brief:
+
+- {{TOP_CODE_RULES}}
+- Commits follow the convention in `00-standards.md` (do not invent your own).
+- Never commit secrets, generated artifacts, or `graphify-out/`.
+
+## Development workflow
+Work in this order — do not skip ahead to coding:
+
+1. **Brainstorm / clarify.** Restate the goal and surface ambiguities before editing.
+   Propose a short design and get agreement on anything non-trivial.
+2. **Plan.** Break the work into small, independently verifiable steps.
+3. **Test-driven.** Write or update a failing test, make it pass, then refactor.
+4. **Debug systematically.** On failure, find the root cause; don't patch symptoms.
+5. **Self-review.** Re-read the diff against the standards before declaring done.
+6. **Verify.** Run the project's tests/linters (see `00-standards.md`) and confirm
+   the change actually works before claiming completion.
+
+> If the **Superpowers** plugin is installed (Claude Code / Codex / Copilot CLI), it
+> enforces this workflow with dedicated skills. The cloud Copilot agent can't run
+> plugins, so the steps above are the canonical version it follows.
+
+## Codebase knowledge graph (graphify)
+This repo can be indexed with **graphify**. When a graph exists (`graphify-out/graph.json`):
+
+- For "how does X work / what calls Y / trace this flow" → `graphify query "<question>"`.
+- For a relationship between two things → `graphify path "<A>" "<B>"`.
+- To focus on one concept → `graphify explain "<concept>"`.
+- Prefer these over broad grep/file dumps; they return a small scoped subgraph.
+- After changing code, run `graphify update .` to keep the graph current.
+
+## Guardrails
+- Don't push, open PRs, or run destructive commands unless explicitly asked.
+- Ask before adding dependencies or changing public interfaces.
+- {{EXTRA_GUARDRAILS}}

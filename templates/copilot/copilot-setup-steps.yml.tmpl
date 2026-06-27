@@ -1,0 +1,41 @@
+# Provisions the ephemeral environment for the GitHub Copilot coding/cloud agent.
+# Requirements (per GitHub docs):
+#   - The job MUST be named exactly "copilot-setup-steps".
+#   - This file only takes effect on the repository's DEFAULT branch.
+#   - Only these job keys are honored: steps, permissions, runs-on, services,
+#     snapshot, timeout-minutes (max 59). A failing step is non-blocking — the
+#     agent proceeds with whatever environment exists, so keep setup robust.
+name: Copilot Setup Steps
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      # TODO: install your toolchain + the static-analysis/test tools listed in
+      # docs/ai-prompts/00-standards.md so the agent can lint and run tests.
+      #
+      # Example (Node):
+      # - uses: actions/setup-node@v4
+      #   with:
+      #     node-version: "22"
+      # - run: npm ci
+      #
+      # Example (Python):
+      # - uses: actions/setup-python@v5
+      #   with:
+      #     python-version: "3.12"
+      # - run: pip install -e ".[dev]"

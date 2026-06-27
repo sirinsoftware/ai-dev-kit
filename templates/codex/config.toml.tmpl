@@ -1,0 +1,11 @@
+# Codex project config (.codex/config.toml)
+# Loads only once you mark this project as "trusted" in Codex.
+# Project instructions are read from ./AGENTS.md automatically — no duplication here.
+
+model = "@@CODEX_MODEL@@"
+model_reasoning_effort = "@@CODEX_REASONING@@"   # minimal | low | medium | high | xhigh
+
+# Optional: per-project MCP servers.
+# [mcp_servers.context7]
+# command = "npx"
+# args = ["-y", "@upstash/context7-mcp"]
