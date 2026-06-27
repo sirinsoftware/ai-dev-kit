@@ -66,7 +66,7 @@ full design.
 ## Options
 `setup.sh [TARGET_DIR] [--agents=…] [--claude-model=…] [--codex-model=…]
 [--codex-reasoning=…] [--superpowers|--no-superpowers] [--no-graphify]
-[--graphify-backend=…] [-y|--yes] [--quiet] [--dry-run]`. Run `./setup.sh --help`.
+[-y|--yes] [--quiet] [--dry-run]`. Run `./setup.sh --help`.
 
 ## Safe to re-run
 Installs are gated on `command -v`; generated content lives in marker blocks that

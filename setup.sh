@@ -19,7 +19,6 @@ CODEX_MODEL="gpt-5.5"
 CODEX_REASONING="high"
 WANT_SUPERPOWERS_ARG="ask"          # ask | yes | no
 NO_GRAPHIFY=""
-GRAPHIFY_BACKEND="claude"
 SUPERPOWERS_REPO="https://github.com/obra/superpowers"
 SUPERPOWERS_MARKETPLACE="obra/superpowers-marketplace"
 
@@ -39,7 +38,6 @@ Options:
   --superpowers               Install Superpowers without asking
   --no-superpowers            Never install Superpowers
   --no-graphify               Skip graphify install + graph build
-  --graphify-backend=NAME     Headless extract backend   (default: claude)
   -y, --yes                   Non-interactive; accept all defaults
   --quiet                     Reduce log output
   --dry-run                   Print planned actions; write/install nothing
@@ -57,7 +55,6 @@ while [ $# -gt 0 ]; do
     --superpowers)        WANT_SUPERPOWERS_ARG="yes" ;;
     --no-superpowers)     WANT_SUPERPOWERS_ARG="no" ;;
     --no-graphify)        NO_GRAPHIFY=1 ;;
-    --graphify-backend=*) GRAPHIFY_BACKEND="${1#*=}" ;;
     -y|--yes)             ASSUME_YES=1 ;;
     --quiet)              QUIET=1 ;;
     --dry-run)            DRY_RUN=1 ;;
@@ -76,7 +73,7 @@ for f in log detect prompt idempotent \
 done
 
 export ASSUME_YES QUIET DRY_RUN CLAUDE_MODEL CODEX_MODEL CODEX_REASONING \
-       GRAPHIFY_BACKEND SUPERPOWERS_REPO SUPERPOWERS_MARKETPLACE
+       SUPERPOWERS_REPO SUPERPOWERS_MARKETPLACE
 
 # ---- selection helpers ----------------------------------------------------
 choose_agents() {

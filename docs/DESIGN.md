@@ -54,4 +54,4 @@ examples/filled/               a worked example
 - Codex project config loads only after you "trust" the project.
 - Copilot model availability is plan/admin-gated.
 - The rich graphify build is agent-orchestrated (`/graphify .`); the headless
-  `graphify extract . --backend claude` is used for unattended setup.
+  `graphify update .` (deterministic AST, no API key) is used for unattended setup.
