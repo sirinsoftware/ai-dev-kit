@@ -51,7 +51,7 @@ below is reference/optional.
 
 | Tool | What it adds | Install |
 |---|---|---|
-| [private-journal-mcp](https://github.com/obra/private-journal-mcp) | Private local agent journal with semantic recall (by the Superpowers author) — clean, Claude-first | `claude mcp add-json private-journal '{"type":"stdio","command":"npx","args":["github:obra/private-journal-mcp"]}'` |
+| [private-journal-mcp](https://github.com/obra/private-journal-mcp) | Private local agent journal with semantic recall (by the Superpowers author) | `--with-journal` clones+builds it once to `~/.ai-dev-kit-tools/` and launches `node …/dist/index.js`. **Don't** use `npx github:obra/private-journal-mcp` — it's GitHub-only + a `tsc` build, so it rebuilds on every launch and the MCP connection times out ("never surfaces"). |
 | [agentmemory](https://github.com/rohitg00/agentmemory) | Tri-agent cross-session memory (working/episodic/semantic); long-running server | `npm i -g @agentmemory/agentmemory` (pre-1.0) |
 | [mcp-memory-keeper](https://github.com/mkreyman/mcp-memory-keeper) | Session-continuity via SQLite (survive context resets) | `claude mcp add memory-keeper npx mcp-memory-keeper` |
 | [mem0](https://docs.mem0.ai/platform/mem0-mcp) | Long-term semantic memory layer (hosted `mcp.mem0.ai/mcp` or self-host OpenMemory) | needs `MEM0_API_KEY` — **not** the archived `mem0ai/mem0-mcp` repo |

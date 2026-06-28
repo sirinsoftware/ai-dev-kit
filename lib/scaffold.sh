@@ -150,6 +150,7 @@ gitignore_step() {
     echo "*.adk-bak"
     echo ".ai-dev-kit-manifest"
     echo ".ai-dev-kit-mcp"
+    echo ".private-journal/"
     if [ -n "${GITIGNORE_GENERATED:-}" ]; then
       while IFS= read -r line; do
         [ -n "$line" ] && echo "/$line"
@@ -165,7 +166,14 @@ gitignore_step() {
 scaffold_extras() {
   local any=""
   if [ -n "${WANT_GREP_MCP:-}" ]; then register_mcp grep http https://mcp.grep.app; any=1; fi
-  if [ -n "${WANT_JOURNAL:-}" ]; then register_mcp private-journal stdio npx github:obra/private-journal-mcp; any=1; fi
+  if [ -n "${WANT_JOURNAL:-}" ]; then
+    local jentry="${ADK_JOURNAL_DIR:-$HOME/.ai-dev-kit-tools/private-journal-mcp}/dist/index.js"
+    if [ -f "$jentry" ]; then
+      register_mcp private-journal stdio node "$jentry"; any=1
+    else
+      log_warn "private-journal not built - re-run setup with --with-journal (needs git + npm) to enable it."
+    fi
+  fi
   if [ -n "${WANT_SERENA:-}" ]; then register_mcp serena stdio uvx --from git+https://github.com/oraios/serena serena-mcp-server --context ide-assistant; any=1; fi
   if [ -n "$any" ]; then
     log_success "MCP servers registered for:${EN_CLAUDE:+ Claude}${EN_CODEX:+ Codex}${EN_COPILOT:+ Copilot}"

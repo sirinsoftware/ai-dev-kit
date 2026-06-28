@@ -93,7 +93,7 @@ done
 # ---- source libraries -----------------------------------------------------
 for f in log detect prompt idempotent mcp \
          configure_claude configure_codex configure_copilot \
-         install_graphify install_ast_grep scaffold; do
+         install_graphify install_ast_grep install_journal scaffold; do
   # shellcheck source=/dev/null
   . "$ADK_ROOT/lib/$f.sh"
 done
@@ -221,6 +221,9 @@ main() {
 
   if [ -n "${WANT_ASTGREP:-}" ]; then
     if is_dry; then log_info "[dry] install ast-grep"; else install_ast_grep; fi
+  fi
+  if [ -n "${WANT_JOURNAL:-}" ]; then
+    if is_dry; then log_info "[dry] build private-journal-mcp"; else install_journal || true; fi
   fi
   if [ -n "${WANT_SERENA:-}" ] && ! has_cmd uv && ! is_dry; then
     log_warn "Serena MCP launches via 'uvx' — install uv so it works at agent runtime."
