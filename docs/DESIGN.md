@@ -42,7 +42,7 @@ templates/                     files rendered into the target project
 docs/                          this design, the SoT matrix, Superpowers notes, related-tools
 examples/filled/               a worked example
 
-Optional tools (ast-grep, Grep/journal/Serena MCP, Claude hooks) are opt-in via
+Optional tools (ast-grep, Grep/journal MCP, Claude hooks) are opt-in via
 `--with-*` flags / prompt; MCP additions are tracked in `.ai-dev-kit-mcp` so
 uninstall removes exactly the kit's entries (preserving your other MCP servers).
 examples/filled/               a worked example

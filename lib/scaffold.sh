@@ -174,7 +174,6 @@ scaffold_extras() {
       log_warn "private-journal not built - re-run setup with --with-journal (needs git + npm) to enable it."
     fi
   fi
-  if [ -n "${WANT_SERENA:-}" ]; then register_mcp serena stdio uvx --from git+https://github.com/oraios/serena serena-mcp-server --context ide-assistant; any=1; fi
   if [ -n "$any" ]; then
     log_success "MCP servers registered for:${EN_CLAUDE:+ Claude}${EN_CODEX:+ Codex}${EN_COPILOT:+ Copilot}"
   fi

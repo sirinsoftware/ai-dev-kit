@@ -87,7 +87,6 @@ for the full vetted catalog and rationale.
 | `--with-ast-grep` | **ast-grep** CLI — structural search + safe codemods (graphify can't rewrite) |
 | `--with-grep` | **Grep MCP** — search ~1M public repos for real-world usage |
 | `--with-journal` | **private-journal** MCP — cross-session memory |
-| `--with-serena` | **Serena** MCP — live LSP symbol nav + edits (needs `uv` at runtime) |
 | `--with-hooks` | **Claude guardrail hooks** — deny secret-file reads / dangerous shell cmds |
 | `--with-all-extras` | all of the above |
 
@@ -100,7 +99,7 @@ cross-agent `/security-audit` command (always installed) or Claude's built-in
 `setup.sh [TARGET_DIR] [--agents=…] [--claude-model=…] [--codex-model=…]
 [--codex-reasoning=…] [--superpowers|--no-superpowers] [--no-graphify]
 [--gitignore|--no-gitignore] [--on-conflict=prompt|backup|skip|overwrite]
-[--with-ast-grep] [--with-grep] [--with-journal] [--with-serena] [--with-hooks]
+[--with-ast-grep] [--with-grep] [--with-journal] [--with-hooks]
 [--with-all-extras] [--no-extras] [-y|--yes] [--quiet] [--dry-run]`. Run `./setup.sh --help`.
 
 ## Existing files (conflict handling)

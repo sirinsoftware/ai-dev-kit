@@ -11,10 +11,11 @@ Tools in the spirit of **graphify** (codebase intelligence) and **Superpowers**
 
 **Now wired into setup as opt-in flags** (reversible via `uninstall.sh`):
 `--with-ast-grep`, `--with-grep` (Grep MCP), `--with-journal` (private-journal),
-`--with-serena`, `--with-hooks` (Claude guardrails); plus an always-installed
-cross-agent `/security-audit` command (no API key). **Context7** is left to add
-manually (one MCP entry) — not every project has fast-moving deps. Everything else
-below is reference/optional.
+and `--with-hooks` (Claude guardrails); plus an always-installed cross-agent
+`/security-audit` command (no API key). **Context7** and **Serena** are *not* wired —
+add them manually if wanted. (Serena was evaluated and dropped: it overlaps graphify
+on references, and the uv+Python+per-language-LSP footprint wasn't worth it here.)
+Everything else below is reference/optional.
 
 **Fit legend:** ⭐ strong add · ◯ optional/opt-in · ⛔ skip (why).
 
@@ -24,7 +25,7 @@ below is reference/optional.
 |---|---|---|---|
 | [Context7 MCP](https://github.com/upstash/context7) | Up-to-date, version-specific library docs/API examples injected at runtime — kills outdated/hallucinated APIs | Remote MCP URL `https://mcp.context7.com/mcp` (no install) | all (MCP) |
 | [ast-grep](https://github.com/ast-grep/ast-grep) | AST/structural code search + safe codemods that text-grep can't express | `brew install ast-grep` · `npm i -g @ast-grep/cli` · `pip install ast-grep-cli` | all (CLI) |
-| [Serena](https://github.com/oraios/serena) | LSP-backed, token-efficient semantic symbol nav + precise cross-file edits (40+ langs) — live intelligence vs. graphify's static graph | `uv tool install serena-agent` → MCP (heaviest: uv+Python+LSP) | all (MCP) |
+| [Serena](https://github.com/oraios/serena) *(not wired — removed)* | LSP-backed semantic symbol nav + precise cross-file edits (40+ langs) — live intelligence vs. graphify's static graph | manual: `uvx --from git+https://github.com/oraios/serena serena-mcp-server` as an MCP entry (heaviest: uv+Python+LSP) | all (MCP) |
 | [claude-code-security-review](https://github.com/anthropics/claude-code-security-review) | Diff-aware semantic vuln scan on PRs (first-party) | GitHub Action `anthropics/claude-code-security-review` | CI (needs `CLAUDE_API_KEY`; local `/security-review` uses Max instead) |
 
 ## ◯ Codebase intelligence / context (opt-in)
@@ -79,8 +80,7 @@ below is reference/optional.
 - "Anthropic's official marketplace ships Superpowers" — **false**; it's the separate `obra/superpowers`.
 - `pip install repomapper`, `brew install rulesync` — no such packages (use the installs above).
 
-## Suggested grouping if/when wiring into setup
-- **Default (near-zero footprint):** Context7 MCP + ast-grep.
-- **`--with-codenav` (prompted):** + Serena (heavier MCP).
-- **`mcp-catalog/` + per-tool flags:** Repomix / Gitingest / Grep MCP / GitHub MCP / one memory tool — enable individually.
-- **Memory = one slot** behind a flag (privacy/footprint note).
+## Current wiring
+- **Wired (opt-in flags):** ast-grep, Grep MCP, private-journal, Claude hooks; always-on `/security-audit`.
+- **Not wired (add manually if wanted):** Context7 (one MCP entry; for fast-moving deps), Serena (overlaps graphify; heavy LSP footprint — removed).
+- **Reference only:** the optional/skip tools above (Repomix, Gitingest, GitHub MCP, etc.).
