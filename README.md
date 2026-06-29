@@ -29,15 +29,18 @@ git clone https://github.com/VM-development/ai-dev-kit ~/.ai-dev-kit
 curl -fsSL https://raw.githubusercontent.com/VM-development/ai-dev-kit/main/bootstrap.sh | bash
 
 # Option B + all optional tools (ast-grep, Grep MCP, private-journal, Claude hooks)
-curl -fsSL https://raw.githubusercontent.com/VM-development/ai-dev-kit/main/bootstrap.sh | bash -s -- --with-all-extras
+curl -fsSL https://raw.githubusercontent.com/VM-development/ai-dev-kit/main/bootstrap.sh \
+  | bash -s -- --with-all-extras
 ```
 
 > Passing flags through `curl … | bash`: use **`bash -s -- <flags>`** (the script is on
 > stdin, so `-s --` forwards the flags to it). `bash --with-all-extras` alone would be
 > read by bash itself, not the script.
 
-You'll be asked which agents to enable, which models to default to, and whether to
-install Superpowers and build the graph. Non-interactive:
+You'll be asked (all yes/no) which agents to enable, whether to install Superpowers
+and build the graph, and whether to add the optional tools. The model isn't prompted
+for — it defaults to `claude-opus-4-8` / `gpt-5.5`, or pass `--claude-model=` /
+`--codex-model=`. Non-interactive:
 
 ```bash
 ~/.ai-dev-kit/setup.sh . --yes --agents=claude,codex,copilot \
