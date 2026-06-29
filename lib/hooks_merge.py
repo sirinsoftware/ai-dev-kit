@@ -10,6 +10,7 @@ Usage:
 """
 import json
 import os
+import shutil
 import sys
 
 GUARD = "$CLAUDE_PROJECT_DIR/.claude/hooks"
@@ -44,9 +45,20 @@ def main():
             with open(path, encoding="utf-8") as f:
                 data = json.load(f)
         except (ValueError, OSError):
-            data = {}
-    if not isinstance(data, dict):
-        data = {}
+            data = None
+        if not isinstance(data, dict):
+            # Malformed or unexpected shape: never overwrite the user's content
+            # with `{}`. Back it up once and leave the file untouched.
+            bak = path + ".adk-bak"
+            if not os.path.exists(bak):
+                try:
+                    shutil.copy2(path, bak)
+                except OSError:
+                    pass
+            sys.stderr.write(
+                "hooks_merge: %s is not a valid JSON object; left unchanged "
+                "(backup at %s).\n" % (path, bak))
+            sys.exit(0)
 
     hooks = data.get("hooks")
     if not isinstance(hooks, dict):

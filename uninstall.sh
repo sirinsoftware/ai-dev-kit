@@ -98,7 +98,11 @@ remove_claude_md() {
   [ -f "$f" ] || { rm -f "$bak" 2>/dev/null || true; return 0; }
   if is_dry; then log_info "[dry] strip ai-dev-kit from CLAUDE.md (preserve your edits)"; return 0; fi
   remove_block "$f" "claude-notes" "<!--" "-->"
-  if head -n1 "$f" | grep -qxF '@AGENTS.md'; then
+  # Strip a leading @AGENTS.md import only if WE prepended it. If a genuine backup
+  # exists whose own first line is @AGENTS.md, the import was the user's — leave it.
+  local user_import=""
+  if [ -f "$bak" ] && head -n1 "$bak" 2>/dev/null | grep -qxF '@AGENTS.md'; then user_import=1; fi
+  if [ -z "$user_import" ] && head -n1 "$f" | grep -qxF '@AGENTS.md'; then
     tmp="$(mktemp)"
     awk 'NR==1 && $0=="@AGENTS.md"{drop=1; next} drop==1 && $0==""{drop=0; next} {drop=0; print}' "$f" > "$tmp" && mv "$tmp" "$f"
   fi
@@ -158,7 +162,7 @@ remove_codex_prompts() {
     if [ -e "$bak" ]; then
       if is_dry; then log_info "[dry] restore codex prompt $c"; continue; fi
       mv -f "$bak" "$abs"; log_success "restored ~/.codex/prompts/$c.md"
-    elif [ -f "$abs" ] && grep -q 'ai-dev-kit:command' "$abs" 2>/dev/null; then
+    elif [ -f "$abs" ] && grep -qxF '<!-- ai-dev-kit:command -->' "$abs" 2>/dev/null; then
       if is_dry; then log_info "[dry] remove codex prompt $c"; continue; fi
       rm -f "$abs"; log_success "removed ~/.codex/prompts/$c.md"
     elif [ -e "$abs" ]; then
@@ -172,7 +176,12 @@ remove_codex_prompts() {
 remove_hooks() {
   local s="$TARGET_DIR/.claude/settings.json"
   [ -f "$s" ] || return 0
-  has_cmd python3 || return 0
+  if ! has_cmd python3; then
+    if grep -qF '.claude/hooks' "$s" 2>/dev/null; then
+      log_warn "python3 missing - couldn't strip kit hooks from .claude/settings.json; remove the PreToolUse guard-* entries by hand."
+    fi
+    return 0
+  fi
   if is_dry; then log_info "[dry] strip ai-dev-kit hooks from .claude/settings.json"; return 0; fi
   python3 "$ADK_ROOT/lib/hooks_merge.py" --remove "$s" \
     && log_success "stripped ai-dev-kit hooks from settings.json" || true
@@ -196,8 +205,10 @@ remove_mcp() {
       if ! has_cmd python3; then log_warn "python3 missing — left MCP '$name' in $file"; failed=1; continue; fi
       if python3 "$ADK_ROOT/lib/mcp_upsert.py" "$TARGET_DIR/$file" "$root" remove "$name"; then
         log_success "removed MCP '$name' from $file"
-        # Delete the file only if it has NO servers and no other content left.
-        if python3 -c "import json,sys; d=json.load(open(sys.argv[1])); r=sys.argv[2]; sys.exit(0 if (not (d.get(r) or {}) and not {k:v for k,v in d.items() if k!=r and v}) else 1)" "$TARGET_DIR/$file" "$root" 2>/dev/null; then
+        # Delete the file only if the kit's root key is the SOLE top-level key and is
+        # now empty. Any other top-level key (even a falsy one like VS Code's
+        # "inputs": []) means the file holds user content, so we keep it.
+        if python3 -c "import json,sys; d=json.load(open(sys.argv[1])); r=sys.argv[2]; sys.exit(0 if (isinstance(d,dict) and not [k for k in d if k!=r] and not (d.get(r) or {})) else 1)" "$TARGET_DIR/$file" "$root" 2>/dev/null; then
           rm -f "$TARGET_DIR/$file"; log_dim "  ($file had nothing left — removed)"
         fi
       else

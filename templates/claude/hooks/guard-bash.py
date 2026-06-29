@@ -3,11 +3,15 @@
 
 Claude Code feeds the tool call as JSON on stdin; exit code 2 blocks the call
 and shows the stderr message to the model. Conservative by design: a recursive
-force-delete is blocked only when it targets an absolute path, $HOME/~, or the
-cwd/glob (`.` `..` `*`) — so everyday `rm -rf build/` style deletes still work.
-Edit DANGER / the dangerous-target set below to tune.
+force-delete is blocked only when it targets an absolute path, $HOME/~, the
+cwd/parent (`.` `..` `./` `../`), or a root/cwd-wide glob (`*` `./*`) — so
+everyday `rm -rf build/` style deletes still work. `rm` is matched by basename,
+so `/bin/rm`, `\\rm`, and `command rm` are caught too. Obfuscation through
+command substitution / eval (`$(echo rm) ...`) is out of scope for a textual
+guard. Edit DANGER / the dangerous-target set below to tune.
 """
 import json
+import os
 import re
 import sys
 
@@ -27,37 +31,48 @@ DANGER = [
 
 
 def _is_dangerous_target(arg):
-    arg = arg.strip().strip('"').strip("'")
-    if not arg:
+    a = arg.strip().strip('"').strip("'").strip()
+    if not a:
         return False
-    if arg in ("/", "~", ".", "..", "*", "/*", "$HOME", "${HOME}"):
+    base = a.rstrip("/")
+    if base in ("", ".", ".."):                 # / // . ./ .. ../  (root, cwd, parent)
         return True
-    if arg.startswith("/"):            # any absolute path: /etc, /important/data
+    if a.startswith("/"):                        # any absolute path: /etc, /important
         return True
-    if arg.startswith("~") or arg.startswith("$HOME") or arg.startswith("${HOME}"):
+    if a.startswith(("~", "$HOME", "${HOME}")):  # home dir (~ , ~/ , ~/foo, $HOME/...)
+        return True
+    if a.startswith("../") or a.startswith("..\\"):   # climbs above the cwd
+        return True
+    if re.fullmatch(r"\.?/?\*+", a):             # *  ./*  (root/cwd-wide glob)
         return True
     return False
+
+
+def _is_rm_token(tok):
+    """True if a token invokes rm regardless of path/quoting: rm, /bin/rm, \\rm, 'rm'."""
+    t = tok.strip().strip('"').strip("'").lstrip("\\")
+    return os.path.basename(t) == "rm"
 
 
 def _dangerous_rm(cmd):
     """True if any segment is `rm` with recursive+force flags on a dangerous target."""
     for seg in re.split(r"&&|\|\||;|\n|\|", cmd):
         toks = seg.split()
-        if "rm" not in toks:
+        idx = next((k for k, t in enumerate(toks) if _is_rm_token(t)), None)
+        if idx is None:
             continue
-        i = toks.index("rm")
-        rest = toks[i + 1:]
-        recursive = force = False
+        rest = toks[idx + 1:]
+        recursive = force = end_opts = False
         targets = []
         for t in rest:
-            if t == "--":
-                continue
-            if t.startswith("--"):
+            if not end_opts and t == "--":      # POSIX end-of-options
+                end_opts = True
+            elif not end_opts and t.startswith("--"):
                 if t == "--recursive":
                     recursive = True
                 elif t == "--force":
                     force = True
-            elif t.startswith("-") and len(t) > 1:
+            elif not end_opts and t.startswith("-") and len(t) > 1:
                 if "r" in t[1:].lower():
                     recursive = True
                 if "f" in t[1:]:

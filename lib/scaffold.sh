@@ -108,7 +108,9 @@ _write_command_codex() {
     printf '\n<!-- ai-dev-kit:command -->\n'   # ownership marker (global dir, not in manifest)
   } > "$tmp"
   # Back up a genuine pre-existing USER prompt (one we didn't write) so it's recoverable.
-  if [ -f "$dest" ] && ! grep -q 'ai-dev-kit:command' "$dest" 2>/dev/null; then backup_once "$dest"; fi
+  # Match the exact marker line, so a user prompt that merely mentions the string in prose
+  # is still treated as theirs and backed up.
+  if [ -f "$dest" ] && ! grep -qxF '<!-- ai-dev-kit:command -->' "$dest" 2>/dev/null; then backup_once "$dest"; fi
   mv "$tmp" "$dest"
 }
 
@@ -238,8 +240,13 @@ scaffold_project() {
   _load_prior_manifest
   # Build the manifest in a temp file; it's moved into place only after a clean run
   # (step 7), so a mid-run abort leaves no partial manifest for uninstall to trust.
+  # The temp is cleaned on any exit (success path empties ADK_MANIFEST first).
   ADK_MANIFEST="$(mktemp)"; export ADK_MANIFEST
-  rm -f "$TARGET_DIR/.ai-dev-kit-mcp"   # fresh MCP ledger; recreated on demand
+  trap 'rm -f "${ADK_MANIFEST:-/nonexistent-adk-tmp}" 2>/dev/null || true' EXIT
+  # NOTE: the MCP ledger (.ai-dev-kit-mcp) is intentionally NOT truncated here. It is
+  # cumulative + append-only (servers added on earlier runs stay in the configs), so
+  # truncating it would strand them, and truncating before scaffold_extras repopulates
+  # it would lose the ledger on a mid-run abort. We dedupe it after a clean run instead.
 
   # 1. AGENTS.md - single source of truth (incl. Standards). Never clobber an existing one.
   if [ ! -f "$TARGET_DIR/AGENTS.md" ]; then
@@ -293,5 +300,9 @@ scaffold_project() {
   gitignore_step
   # Atomically publish the manifest now that scaffolding fully succeeded.
   mv -f "$ADK_MANIFEST" "$TARGET_DIR/.ai-dev-kit-manifest"; ADK_MANIFEST=""
+  # Dedupe the cumulative MCP ledger (re-runs append the same lines).
+  if [ -f "$TARGET_DIR/.ai-dev-kit-mcp" ]; then
+    sort -u "$TARGET_DIR/.ai-dev-kit-mcp" -o "$TARGET_DIR/.ai-dev-kit-mcp" 2>/dev/null || true
+  fi
   return 0
 }

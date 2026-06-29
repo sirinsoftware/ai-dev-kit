@@ -11,8 +11,11 @@ import re
 import sys
 
 # Anchored: only the legitimate template/sample files (NOT a substring bypass).
+# A bare `.env.example` and typed variants (`.env.example.ts/.json`) are allowed;
+# `.env.example.local` is deliberately NOT (it would carry real secrets).
 ALLOW = [
     r"\.env\.(example|sample|template|dist)$",
+    r"\.env\.(example|sample|template|dist)\.(ts|js|mjs|cjs|json|ya?ml|toml)$",
 ]
 DENY = [
     r"(^|/)\.env($|\.[^/]*$)",          # .env, .env.local, .env.production
