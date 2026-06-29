@@ -23,7 +23,9 @@ _read_tty() {
 # confirm "Question?" [default y|n] -> exit 0 = yes, 1 = no
 confirm() {
   local q="$1" def="${2:-y}" ans hint
-  case "$def" in y|Y) hint="[Y/n]" ;; *) hint="[y/N]" ;; esac
+  # Uniform casing everywhere ([y/n]); the default is stated explicitly rather than
+  # implied by which letter is capitalized (which read as inconsistent).
+  case "$def" in y|Y) hint="[y/n] (default: yes)" ;; *) hint="[y/n] (default: no)" ;; esac
   if [ -n "${ASSUME_YES:-}" ]; then
     case "$def" in y|Y) return 0 ;; *) return 1 ;; esac
   fi
