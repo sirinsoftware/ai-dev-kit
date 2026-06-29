@@ -120,16 +120,6 @@ choose_agents() {
   export EN_CLAUDE EN_CODEX EN_COPILOT
 }
 
-choose_models() {
-  if [ -n "${EN_CLAUDE:-}" ]; then
-    CLAUDE_MODEL="$(ask "Default Claude model" "$CLAUDE_MODEL")"
-  fi
-  if [ -n "${EN_CODEX:-}" ]; then
-    CODEX_MODEL="$(ask "Default Codex (GPT) model" "$CODEX_MODEL")"
-  fi
-  export CLAUDE_MODEL CODEX_MODEL
-}
-
 decide_superpowers() {
   case "$WANT_SUPERPOWERS_ARG" in
     yes) WANT_SUPERPOWERS=1 ;;
@@ -197,7 +187,10 @@ main() {
 
   choose_agents
   [ -n "${EN_CLAUDE:-}${EN_CODEX:-}${EN_COPILOT:-}" ] || die "No agents selected; nothing to do."
-  choose_models
+  # Models are NOT prompted for (a free-text answer is easy to fumble with a y/n reflex).
+  # They come from defaults or --claude-model= / --codex-model=; the chosen value is logged below.
+  [ -n "${EN_CLAUDE:-}" ] && log_dim "Claude model: $CLAUDE_MODEL (change with --claude-model=NAME)"
+  [ -n "${EN_CODEX:-}" ]  && log_dim "Codex model:  $CODEX_MODEL (change with --codex-model=NAME)"
   decide_superpowers
   decide_gitignore
   decide_extras
