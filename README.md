@@ -74,6 +74,24 @@ opt-in via their flag — or all at once with `--with-all-extras` — and every 
 
 MCP servers (Grep, private-journal) are written into each enabled agent's config; security review needs **no API key** (use `/security-audit`, or Claude's built-in `/security-review`).
 
+## Example prompt — a feature through every tool
+Drive one feature through graphify, Grep MCP, ast-grep, the workflow, and private-journal
+(full walk-through: [docs/example-prompt.md](docs/example-prompt.md)):
+
+```text
+Implement <feature> and follow our
+workflow — don't jump straight to code.
+1. Orient (graphify). graphify query "how do incoming HTTP requests flow and where is
+   middleware registered" + graphify path "<router>" "<handler>" → integration points.
+2. Prior art (Grep MCP). Search public repos for real rate-limiter middleware in our
+   language (token-bucket / sliding-window); show 2-3 examples + trade-offs.
+3. Survey our code (ast-grep). ast-grep -p 'app.use($M)' -l ts (adapt) → every call site.
+4. Decide + record (private-journal). Pick algorithm/config; record the decision AND why.
+5. Plan + build (workflow). Failing test first → implement → wire in → run test/lint/
+   typecheck from AGENTS.md → self-review vs Standards.
+6. Wrap up. Summarize, graphify update ., report what you journaled. Don't push.
+```
+
 ## Reference
 - **Slash commands** (where enabled): `/pr-review`, `/deep-test`, `/security-audit` (no API key), `/progress-report`, `/repeatable-task`, `/report-html`. Codex uses `/prompts:<name>`.
 - **HTML reports/plans:** ask any report/plan command for HTML — or run `/report-html <topic|file>` — for a styled, self-contained `.html` (Catppuccin Mocha) under `docs/reports/`. The house style lives in `AGENTS.md` → Output formats.
