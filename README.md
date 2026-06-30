@@ -1,155 +1,56 @@
 # ai-dev-kit
 
-Bootstrap any project for AI-assisted development across **Claude Code** (Claude
-models), **OpenAI Codex** (GPT models), and the **GitHub Copilot** cloud agent
-(any model) — from one shared set of files.
+One `AGENTS.md` configures **Claude Code** (Claude), **OpenAI Codex** (GPT), and the
+**GitHub Copilot** cloud agent for a project — shared standards, native slash commands,
+a code knowledge graph (graphify), and optional tools. The agent CLIs you use are
+assumed already installed (the script verifies them; it does install graphify + Superpowers).
 
-One `AGENTS.md` drives all three agents. The setup script verifies the agent CLIs
-you choose are present, optionally installs [Superpowers](docs/superpowers.md) per
-agent, installs [graphify](https://pypi.org/project/graphifyy/) and builds a code
-knowledge graph, and scaffolds each agent's native config plus a set of reusable
-**slash commands** (`/pr-review`, `/progress-report`, `/deep-test`,
-`/repeatable-task`).
+## Install
 
-> **Prerequisites:** the Claude Code, Codex, and/or Copilot CLIs you plan to use
-> are assumed already installed — the script verifies them and warns if one is
-> missing, but does not install them. It *does* install graphify (+ `uv`) and the
-> Superpowers plugins.
-
-## Quickstart
-
-**From inside the project you want to configure:**
+Run **inside the project you want to configure**:
 
 ```bash
-# Option A — clone and run
-git clone https://github.com/VM-development/ai-dev-kit ~/.ai-dev-kit
-~/.ai-dev-kit/setup.sh .
-
-# Option B — one-liner (clones to ~/.ai-dev-kit, then configures the current dir)
+# Core — prompts you through which agents + tools to enable
 curl -fsSL https://raw.githubusercontent.com/VM-development/ai-dev-kit/main/bootstrap.sh | bash
 
-# Option B + all optional tools (ast-grep, Grep MCP, private-journal, Claude hooks)
+# Core + all optional tools (ast-grep, Grep MCP, private-journal, Claude guardrail hooks)
 curl -fsSL https://raw.githubusercontent.com/VM-development/ai-dev-kit/main/bootstrap.sh \
   | bash -s -- --with-all-extras
 ```
 
-> Passing flags through `curl … | bash`: use **`bash -s -- <flags>`** (the script is on
-> stdin, so `-s --` forwards the flags to it). `bash --with-all-extras` alone would be
-> read by bash itself, not the script.
+Non-interactive: append `bash -s -- --yes --agents=claude,codex,copilot`. All flags: `./setup.sh --help`.
 
-You'll be asked (all yes/no) which agents to enable, whether to install Superpowers
-and build the graph, and whether to add the optional tools. The model isn't prompted
-for — it defaults to `claude-opus-4-8` / `gpt-5.5`, or pass `--claude-model=` /
-`--codex-model=`. Non-interactive:
+## Edit after install
 
-```bash
-~/.ai-dev-kit/setup.sh . --yes --agents=claude,codex,copilot \
-  --claude-model=claude-opus-4-8 --codex-model=gpt-5.5 --no-graphify
-```
+Everything you customize lives in **one file — `AGENTS.md`**. Fill in every `{{…}}`; all
+three agents read it. This is where your code standards, check tools, and PR/commit formats go:
 
-> Update `VM-development/ai-dev-kit` to your own fork/repo, and adjust the model
-> defaults in `setup.sh` as model lineups change.
-
-## What it writes into your project
-
-| File | For | Purpose |
+| What you set | Section in `AGENTS.md` | Placeholder(s) |
 |---|---|---|
-| `AGENTS.md`                                   | all      | **Single source of truth** (you fill it in) |
-| `CLAUDE.md`                                   | Claude   | `@AGENTS.md` import + managed notes |
-| `.claude/settings.json`                       | Claude   | model + schema |
-| `.codex/config.toml`                          | Codex    | model + reasoning effort |
-| `.github/copilot-instructions.md`             | Copilot  | pointer to `AGENTS.md` |
-| `.github/workflows/copilot-setup-steps.yml`   | Copilot  | cloud-agent environment |
-| `.claude/commands/*.md`                       | Claude   | slash commands → `/pr-review` … |
-| `.github/prompts/*.prompt.md`                 | Copilot  | IDE-chat prompts → `/pr-review` … |
-| `~/.codex/prompts/*.md`                        | Codex    | **user-global** prompts → `/prompts:pr-review` … |
-| `.gitignore` (appended)                       | —        | ignores `graphify-out/`, `*.local.*`, backups |
+| Project overview / tech stack          | top                         | `{{PROJECT_OVERVIEW}}`, `{{TECH_STACK}}` |
+| **Code standards** + formatter         | Standards → Code            | `{{CODE_STANDARDS}}`, `{{FORMAT_COMMAND}}` |
+| **Commit message format**              | Standards → Commit messages | `{{COMMIT_STANDARDS}}` |
+| **PR rules + description format**       | Standards → Pull requests   | `{{PR_STANDARDS}}`, `{{PR_DESCRIPTION_FORMAT}}` |
+| **Code-check tools** (lint/type/security) | Standards → Static analysis | `{{LINT_COMMAND}}`, `{{TYPECHECK_COMMAND}}`, `{{SECURITY_SCAN_COMMAND}}` |
+| **Test command** + coverage target     | Standards → Tests           | `{{TEST_COMMAND}}`, `{{COVERAGE_TARGET}}` |
+| Real device / environment              | Standards → Real device     | `{{REAL_DEVICE_NOTES}}`, `{{REAL_DEVICE_TEST_SCRIPT}}`, `{{REAL_DEVICE_PREREQS}}` |
+| Extra guardrails                        | Guardrails                  | `{{EXTRA_GUARDRAILS}}` |
 
-The Standards (code/commit/PR rules, static-analysis tools, tests, real-device
-script) live in the **`AGENTS.md`** Standards section — fill them in there, in one
-place, and every tool and command picks them up.
+**Only edit one other file — and only if you use the Copilot *cloud* agent:**
+`.github/workflows/copilot-setup-steps.yml` — replace the TODO with your real toolchain +
+the lint/test installs, then commit it to the **default branch**.
 
-> **Commands by tool.** Claude Code: `/pr-review` (`.claude/commands/`). Copilot:
-> `/pr-review` in **IDE chat** (`.github/prompts/` — the Copilot *cloud* agent does
-> not read prompt files; it follows `AGENTS.md`). Codex: `/prompts:pr-review`
-> (installed **user-globally** to `~/.codex/prompts/`; restart Codex to see them).
+Everything else is generated and managed for you — leave it alone:
+`CLAUDE.md`, `.claude/`, `.codex/config.toml`, `.github/copilot-instructions.md`, and the
+slash-command files.
 
-See [`docs/single-source-of-truth.md`](docs/single-source-of-truth.md) for exactly
-how each agent reads its config, [`docs/DESIGN.md`](docs/DESIGN.md) for the full
-design, and [`docs/related-tools.md`](docs/related-tools.md) for a vetted catalog of
-extra tools (graphify/Superpowers-class) you can add.
+## Then
+1. **Codex:** open the project once and **trust** it (so `.codex/config.toml` loads); restart Codex to load the `/prompts:*` commands.
+2. **Copilot:** pick the model in the task model-picker.
+3. After code changes: `graphify update .`
 
-## After setup
-1. Fill in `AGENTS.md`, including its **Standards** section (code/commit/PR rules,
-   tools, tests, real-device script). The commands reference it.
-2. Codex: open the project once and **trust** it so `.codex/config.toml` loads.
-3. Copilot: commit `copilot-setup-steps.yml` to the **default branch**; pick the
-   model in the task model-picker.
-4. After code changes: `graphify update .`
-
-## What each tool does
-
-| Tool | What it is | Typical use | Set up by |
-|---|---|---|---|
-| **graphify** | A queryable **code knowledge graph** of your repo (relationships/architecture) — recall instead of grepping | `graphify query "how does auth work"` to orient before editing; `graphify update .` after changes | default (prompted) |
-| **Superpowers** | A **dev-methodology** plugin for Claude Code: brainstorm → plan → TDD → review | Ask for a feature and it clarifies, plans, and writes tests first instead of dumping code | default (prompted) |
-| **Slash commands** | `pr-review`, `progress-report`, `deep-test`, `repeatable-task`, `security-audit` | `/pr-review 42` · `/deep-test src/api` · `/security-audit` (no API key) | always |
-| **ast-grep** | **Structural (AST) search + safe codemods**, many languages; 100% local | Bulk-rewrite a call pattern repo-wide (`ast-grep -p '…' -r '…' -l ts`); find matches regex can't express | `--with-ast-grep` |
-| **Grep MCP** | Search **~1M public GitHub repos** for real-world usage examples | "find real examples of `<API>`" — grounds the agent, avoids hallucinated APIs | `--with-grep` |
-| **private-journal** | **Local cross-session memory** (on-device embeddings, nothing leaves the machine) | "record in your journal: we chose X because Y" → recall it in a later session | `--with-journal` |
-| **Claude hooks** | **Deterministic guardrails** (Claude only) | Auto-block reading `.env`/secrets and dangerous shell commands (`rm -rf /`, `curl \| sh`) | `--with-hooks` |
-
-graphify + Superpowers are the always-offered core; the rest are opt-in. Setup prints
-this same "what / config / use" blurb as it installs each one.
-
-## Optional tools (opt-in)
-The extras above (ast-grep, Grep MCP, private-journal, Claude hooks) are enabled by
-their `--with-*` flag or the setup prompt — or all at once with **`--with-all-extras`**;
-all are reversible by `uninstall.sh`. MCP servers are written into each enabled
-agent's config (`.mcp.json` / `.codex/config.toml` / `.vscode/mcp.json`). Security
-review needs **no API key** — use the cross-agent `/security-audit` command (always
-installed) or Claude's built-in `/security-review`, both on your existing plan. See
-[`docs/related-tools.md`](docs/related-tools.md) for the full vetted catalog.
-
-## Options
-`setup.sh [TARGET_DIR] [--agents=…] [--claude-model=…] [--codex-model=…]
-[--codex-reasoning=…] [--superpowers|--no-superpowers] [--no-graphify]
-[--gitignore|--no-gitignore] [--on-conflict=prompt|backup|skip|overwrite]
-[--with-ast-grep] [--with-grep] [--with-journal] [--with-hooks]
-[--with-all-extras] [--no-extras] [-y|--yes] [--quiet] [--dry-run]`. Run `./setup.sh --help`.
-
-## Existing files (conflict handling)
-Re-running is safe: files the kit created before are updated in place (tracked in
-`.ai-dev-kit-manifest`). If a file the kit would write **already exists and you
-created it**, `--on-conflict` decides what happens:
-
-| Policy | Behavior |
-|---|---|
-| `prompt` (default) | Ask per file. `--yes` treats this as `backup`. |
-| `backup` | Save your copy to `<file>.adk-bak`, then write the kit version (restorable). |
-| `skip` | Keep yours; don't write the kit version. |
-| `overwrite` | Replace yours with no backup. |
-
-`AGENTS.md` is never overwritten (it's yours); `CLAUDE.md` is merged
-(your content is preserved below the `@AGENTS.md` import).
-
-## Uninstall
-Reverse everything the kit added to a project:
-```bash
-~/.ai-dev-kit/uninstall.sh .            # restores backups, removes kit files, cleans .gitignore
-~/.ai-dev-kit/uninstall.sh . --dry-run  # preview
-~/.ai-dev-kit/uninstall.sh . --with-superpowers --with-graphify   # also remove the global tools
-```
-It restores any `*.adk-bak` (your originals), removes only files in the manifest,
-strips the kit's `.gitignore` block (leaving your lines), and removes the kit's
-global Codex prompts (only those it created). It also **strips the kit's MCP server
-entries** from `.mcp.json` / `.codex/config.toml` / `.vscode/mcp.json` (deleting those
-files only if nothing else remains — your own servers are kept), removes the
-guardrail-hook entries from `.claude/settings.json`, and **deletes `graphify-out/`**.
-Without a manifest it does a best-effort, ownership-safe cleanup that never blind-deletes
-a file it can't prove it created. `--with-superpowers` / `--with-graphify` additionally
-remove those global tools.
-
-## Safe to re-run
-Installs are gated on `command -v`; generated content lives in marker blocks that
-are replaced (not duplicated). Try `./setup.sh . --dry-run` to preview.
+## Reference
+- **Slash commands** (where enabled): `/pr-review`, `/deep-test`, `/security-audit` (no API key), `/progress-report`, `/repeatable-task`. Codex uses `/prompts:<name>`.
+- **Options & conflict handling:** `./setup.sh --help`. Re-running is safe (idempotent; tracked in `.ai-dev-kit-manifest`); `AGENTS.md` is never overwritten.
+- **Uninstall:** `~/.ai-dev-kit/uninstall.sh .` (add `--dry-run` to preview) — restores backups, removes only kit files, strips kit `.gitignore`/MCP/hook entries.
+- **Docs:** [how each agent reads its config](docs/single-source-of-truth.md) · [design](docs/DESIGN.md) · [tool catalog](docs/related-tools.md) · [QA test plan](docs/test-plan.html).
