@@ -40,6 +40,15 @@ three agents read it. This is where your code standards, check tools, and PR/com
 `.github/workflows/copilot-setup-steps.yml` — replace the TODO with your real toolchain +
 the lint/test installs, then commit it to the **default branch**.
 
+**Share vs. local — `.gitignore`.** Your agent config (`AGENTS.md`, `.claude/`, `.codex/`,
+`.github/`, slash commands) is committed by default, so the whole team shares one setup. To
+*also* commit something the kit ignores — e.g. the code graph, so teammates/CI/the cloud agent
+get it without rebuilding — remove its line from the managed block and force-add it:
+`git add -f graphify-out/`. The `-f` is what makes it stick: tracked files override `.gitignore`
+and survive `setup.sh` re-runs (which regenerate the managed block). Keep `*.local.*`,
+`.claude/settings.local.json`, `*.adk-bak`, `.ai-dev-kit-manifest`, `.ai-dev-kit-mcp`, and
+`.private-journal/` ignored — those are personal/local.
+
 Everything else is generated and managed for you — leave it alone:
 `CLAUDE.md`, `.claude/`, `.codex/config.toml`, `.github/copilot-instructions.md`, and the
 slash-command files.
