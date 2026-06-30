@@ -2,7 +2,8 @@ Handle a pull request review for: **__ARG__** — a PR number, URL, branch, or, 
 that is empty, "the current diff".
 
 Read this repo's `AGENTS.md` first — its **Standards** section is the rubric you
-review against and defines the PR description format. Get the diff
+review against (see **Code review** for priorities, the severity scale, and merge gates)
+and defines the PR description format. Get the diff
 (e.g. `gh pr diff __ARG__`, or `git diff main...HEAD` for the current branch).
 
 Run the modes I ask for (default: A → B → C).

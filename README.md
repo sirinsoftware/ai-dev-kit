@@ -31,6 +31,7 @@ three agents read it. This is where your code standards, check tools, and PR/com
 | **Code standards** + formatter         | Standards → Code            | `{{CODE_STANDARDS}}`, `{{FORMAT_COMMAND}}` |
 | **Commit message format**              | Standards → Commit messages | `{{COMMIT_STANDARDS}}` |
 | **PR rules + description format**       | Standards → Pull requests   | `{{PR_STANDARDS}}`, `{{PR_DESCRIPTION_FORMAT}}` |
+| **Code-review rubric** (priorities, severity, merge gates) | Standards → Code review | `{{REVIEW_STANDARDS}}`, `{{REVIEW_MERGE_GATES}}` |
 | **Code-check tools** (lint/type/security) | Standards → Static analysis | `{{LINT_COMMAND}}`, `{{TYPECHECK_COMMAND}}`, `{{SECURITY_SCAN_COMMAND}}` |
 | **Test command** + coverage target     | Standards → Tests           | `{{TEST_COMMAND}}`, `{{COVERAGE_TARGET}}` |
 | Real device / environment              | Standards → Real device     | `{{REAL_DEVICE_NOTES}}`, `{{REAL_DEVICE_TEST_SCRIPT}}`, `{{REAL_DEVICE_PREREQS}}` |

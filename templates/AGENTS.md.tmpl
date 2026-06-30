@@ -38,6 +38,13 @@ PR description format (used by `/pr-review`):
 {{PR_DESCRIPTION_FORMAT}}
 ```
 
+### Code review
+<!-- The rubric `/pr-review` and human reviewers apply: what to prioritize, what blocks a
+merge, and any required approvals / CI gates. -->
+{{REVIEW_STANDARDS}}
+- Severity scale: blocker / major / minor / nit — blockers and majors must be resolved before merge.
+- Required to merge: {{REVIEW_MERGE_GATES}}
+
 ### Static analysis — run and pass before opening a PR
 - Lint: `{{LINT_COMMAND}}`
 - Type check: `{{TYPECHECK_COMMAND}}`
