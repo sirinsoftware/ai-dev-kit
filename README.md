@@ -79,4 +79,4 @@ MCP servers (Grep, private-journal) are written into each enabled agent's config
 - **HTML reports/plans:** ask any report/plan command for HTML — or run `/report-html <topic|file>` — for a styled, self-contained `.html` (Catppuccin Mocha) under `docs/reports/`. The house style lives in `AGENTS.md` → Output formats.
 - **Options & conflict handling:** `./setup.sh --help`. Re-running is safe (idempotent; tracked in `.ai-dev-kit-manifest`); `AGENTS.md` is never overwritten.
 - **Uninstall:** `~/.ai-dev-kit/uninstall.sh .` (add `--dry-run` to preview) — restores backups, removes only kit files, strips kit `.gitignore`/MCP/hook entries.
-- **Docs:** [how each agent reads its config](docs/single-source-of-truth.md) · [design](docs/DESIGN.md) · [tool catalog](docs/related-tools.md) · [QA test plan](docs/test-plan.html).
+- **Docs:** [worked example — a feature through every tool](docs/example-prompt.md) · [how each agent reads its config](docs/single-source-of-truth.md) · [design](docs/DESIGN.md) · [tool catalog](docs/related-tools.md) · [QA test plan](docs/test-plan.html).
