@@ -25,3 +25,6 @@ makes sense, propose codifying it further as a script, a Makefile target, a Clau
 command/skill, or a Codex/Copilot prompt so future runs are one command.
 
 Output the runbook now, then ask if I want the script/command version.
+
+> **HTML option:** if I ask for HTML, write the runbook as a self-contained `.html` per
+> **Output formats** in `AGENTS.md`, to `docs/runbooks/<task-slug>.html` (or run `/report-html`).

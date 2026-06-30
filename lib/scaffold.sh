@@ -62,6 +62,7 @@ _cmd_desc() {
     deep-test)       echo "Design and run an in-depth testing algorithm for a target." ;;
     repeatable-task) echo "Turn a recurring task into a deterministic, repeatable runbook." ;;
     security-audit)  echo "Security review of a diff/area in this session (no API key)." ;;
+    report-html)     echo "Render a report/plan/topic as a styled, self-contained HTML file." ;;
     *)               echo "ai-dev-kit command." ;;
   esac
 }
@@ -73,6 +74,7 @@ _cmd_hint() {
     deep-test)       echo "file / module / feature to test" ;;
     repeatable-task) echo "task to codify" ;;
     security-audit)  echo "PR ref / path (default: current diff)" ;;
+    report-html)     echo "topic, file, or report to render (default: ask)" ;;
     *)               echo "argument" ;;
   esac
 }

@@ -75,9 +75,26 @@ ai-dev-kit installs these as native slash commands (where you enabled them):
 | `deep-test <target>`      | design + run an in-depth testing algorithm | `/deep-test` · `/prompts:deep-test` |
 | `repeatable-task <task>`  | turn a recurring chore into a runbook | `/repeatable-task` · `/prompts:repeatable-task` |
 | `security-audit <ref>`    | security review of a diff/area (no API key) | `/security-audit` · `/prompts:security-audit` |
+| `report-html <topic/file>`| render a report/plan as a styled self-contained HTML file | `/report-html` · `/prompts:report-html` |
 
 (Copilot prompt files work in IDE chat only — the Copilot cloud agent follows this file instead.)
 For Claude, the built-in `/security-review` also works on your Claude plan (no API key).
+
+## Output formats
+Reports and plans default to **Markdown** (terminal/PR/repo-friendly). When I ask for HTML
+(say "as HTML", or use `/report-html`), produce one **self-contained** `.html` file — inline
+`<style>` + vanilla `<script>`, no external deps, works offline — saved under `docs/reports/`.
+Output raw HTML only (no Markdown, no prose outside the file).
+
+**Style — Catppuccin Mocha (dark):** bg `#1e1e2e`, surface `#313244`, text `#cdd6f4`, muted
+`#a6adc8`, accent `#cba6f7`, links `#89b4fa`, success `#a6e3a1`, warning `#f9e2af`. System
+font stack ~16px, generous line-height, rounded corners, subtle borders.
+
+**Use semantic HTML only where it aids comprehension** (don't force it): sticky table of
+contents / anchor links for multi-section docs; styled zebra tables with a sticky header for
+comparisons; `<progress>` or styled meters for any metric, score, or completion; inline SVG
+for flows, architecture, or relationships; collapsible `<details>`, tabs, and copy-to-clipboard
+on code blocks; styled code blocks plus callout/admonition boxes for notes and warnings.
 
 ## Codebase knowledge graph (graphify)
 When a graph exists (`graphify-out/graph.json`):

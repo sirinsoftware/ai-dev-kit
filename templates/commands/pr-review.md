@@ -40,6 +40,10 @@ Report only — do not modify their code:
 **Out of scope / follow-ups:** <separate issues>
 ```
 
+> **HTML option:** if I ask for HTML, emit this report as a self-contained `.html` per
+> **Output formats** in `AGENTS.md`, saved under `docs/reports/` (or run `/report-html`).
+> (Mode E PR descriptions stay Markdown — GitHub renders them.)
+
 ## Mode D — Fix (only if I ask you to fix the issues)
 On a new branch, address the verified findings — one logical change per commit,
 commit messages per the Standards. After fixing, re-run the formatter, static

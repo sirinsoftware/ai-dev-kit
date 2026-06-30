@@ -31,3 +31,6 @@ attacker-controlled input. Drop anything you can't substantiate.
 ```
 End with a one-line verdict (safe to merge / fix required) and note what you did NOT
 cover. Do not modify code unless I explicitly ask you to fix the findings.
+
+> **HTML option:** if I ask for HTML, emit this report as a self-contained `.html` per
+> **Output formats** in `AGENTS.md`, saved under `docs/reports/` (or run `/report-html`).

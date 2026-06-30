@@ -32,3 +32,6 @@ Then output:
 ```
 
 Keep it factual and skimmable.
+
+> **HTML option:** if I ask for HTML, emit this report as a self-contained `.html` per
+> **Output formats** in `AGENTS.md`, saved under `docs/reports/` (or run `/report-html`) — instead of Markdown.

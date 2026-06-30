@@ -29,3 +29,7 @@ cases run the device/environment script there. Report coverage vs. the target an
 gaps you chose not to cover, and why.
 
 Don't declare done until the suite passes and the critical paths are justified.
+
+> **HTML option:** if I ask for HTML, also emit the plan (surface map, case table, coverage)
+> as a self-contained `.html` per **Output formats** in `AGENTS.md`, saved under `docs/reports/`
+> (or run `/report-html`).
