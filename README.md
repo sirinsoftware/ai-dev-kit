@@ -90,6 +90,37 @@ In Claude Code these run as skills, roughly in order; Codex/Copilot follow the s
 | `requesting-code-review` | between tasks | reviews against the plan and reports issues by severity — critical issues block progress |
 | `finishing-a-development-branch` | when tasks complete | verifies tests, presents options (merge / PR / keep / discard), cleans up the worktree |
 
+### Usage examples
+
+**[graphify](https://pypi.org/project/graphifyy/)**
+- `graphify query "how does auth work"` — orient before editing
+- `graphify path "LoginController" "TokenStore"` — trace a relationship · `graphify explain "rate limiter"`
+- `graphify update .` — refresh the graph after changes
+
+**[ponytail](https://github.com/DietrichGebert/ponytail)**
+- `/ponytail` toggle lazy mode (`/ponytail ultra` for max) · `/ponytail-review` a diff · `/ponytail-audit` the repo
+- in-mode: *"add a date picker"* → `<input type="date">`, not a library
+
+**[spec-kit](https://github.com/github/spec-kit)**
+- `specify init . --integration claude` — scaffold the spec-driven structure
+- `/speckit.constitution` → `/speckit.specify "reset password"` → `/speckit.plan` → `/speckit.tasks` → `/speckit.implement`
+
+**[ast-grep](https://github.com/ast-grep/ast-grep)**
+- `ast-grep -p 'console.log($$$)' -l ts` — find every call site
+- `ast-grep -p 'var $X = $Y' -r 'const $X = $Y' -l js` — structural rewrite (codemod)
+
+**[Grep MCP](https://grep.app)** — ask the agent
+- *"use Grep to find real-world usage of `zod .refine`"*
+- *"how do popular repos implement retry-with-backoff?"*
+
+**[private-journal](https://github.com/obra/private-journal-mcp)** — ask the agent
+- *"record in your journal: chose Postgres over Mongo because of relational joins"*
+- *"check your journal — what did we decide about the DB?"*
+
+**[Claude hooks](templates/claude/hooks/)** — automatic, no command
+- blocks reads/edits of secrets (`.env`, `secrets.yaml`, `*.pem`)
+- blocks dangerous shell (`rm -rf /`, `curl … | sh`, force-push to `main`)
+
 ## Example prompt — a feature through every tool
 Drive one feature through graphify, Grep MCP, ast-grep, the workflow, and private-journal
 (full walk-through: [docs/example-prompt.md](docs/example-prompt.md)):
