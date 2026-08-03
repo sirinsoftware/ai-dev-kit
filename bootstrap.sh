@@ -4,7 +4,9 @@
 # Clones (or updates) ai-dev-kit, then runs setup.sh against the current directory.
 #
 #   curl -fsSL https://raw.githubusercontent.com/VM-development/ai-dev-kit/main/bootstrap.sh | bash
+#   wget -qO-  https://raw.githubusercontent.com/VM-development/ai-dev-kit/main/bootstrap.sh | bash
 #
+# (Flags after `bash -s --` are forwarded to setup.sh with either downloader.)
 # Override the source repo / cache dir with ADK_REPO / ADK_DEST env vars.
 #
 set -euo pipefail
