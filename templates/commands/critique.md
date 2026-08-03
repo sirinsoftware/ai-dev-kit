@@ -17,7 +17,10 @@ reviews correlated, which defeats the point). In Claude Code, dispatch these sub
 elsewhere run the same lenses as separate self-contained passes:
 - `critic-edge-cases` (top-tier): inputs and sequences that break the plan.
 - `critic-rollback` (top-tier): point of no return, migration reversibility, deploy order.
-- `critic-minimalism` (cheapest): structure with no requirement behind it.
+- **Minimalism** — if the ponytail plugin is installed, run its review skill
+  (`/ponytail-review`) against `plan.md`: it is purpose-built and benchmarked for
+  over-engineering. Otherwise dispatch the `critic-minimalism` subagent (cheapest
+  model): structure with no requirement behind it.
 - **Cross-vendor** (if the `codex` CLI is installed): run in the background
   `codex exec "Critique the plan at docs/process/<slug>/plan.md against docs/process/<slug>/context.md. Findings as file:line + severity."`
   Same-vendor critics share blind spots; this one disagrees for different reasons.

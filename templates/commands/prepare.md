@@ -16,9 +16,10 @@ then slices + test matrix + failure matrix + operational sections + minimalism p
 → `plan.md`.
 
 **3. Critique** — run the `/critique` steps: deterministic checks, then the critics IN
-PARALLEL in one message (`critic-edge-cases`, `critic-rollback`, `critic-minimalism`
-subagents; `codex exec` cross-vendor in the background if installed; paths only, no
-narrative). Adjudicate by `file:line` grouping; revise `plan.md`; write `critique.md`.
+PARALLEL in one message (`critic-edge-cases` + `critic-rollback` subagents; minimalism
+via ponytail's `/ponytail-review` if installed, else the `critic-minimalism` subagent;
+`codex exec` cross-vendor in the background if installed; paths only, no narrative).
+Adjudicate by `file:line` grouping; revise `plan.md`; write `critique.md`.
 
 **4. Defend** — run the `/defend` steps: the 10 hostile questions answered with
 quotes/references → `defense.md` ending `Verdict: READY` or `Verdict: NOT READY`.

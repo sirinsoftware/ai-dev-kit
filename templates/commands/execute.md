@@ -16,7 +16,8 @@ Implementation only — no review, no device runs here (that is `/verify-feature
 **Per slice:**
 1. TDD, strictly (Superpowers `test-driven-development` if available): failing test →
    watch it fail → minimal code → watch it pass → refactor. Follow the AGENTS.md code
-   standards.
+   standards; write the MINIMUM code that passes (ponytail mode, if installed — reuse
+   existing helpers, stdlib/native before new deps).
 2. Commit per the AGENTS.md commit-message standard — one logical change per commit.
    Local commits only; never push.
 3. After each test run, update `docs/process/<slug>/.verify-state.json`:

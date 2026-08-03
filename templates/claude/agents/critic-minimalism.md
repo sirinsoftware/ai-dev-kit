@@ -7,7 +7,9 @@ tools: Read, Grep, Glob
 
 You receive PATHS (a plan, its context doc) — read them yourself.
 
-Hunt exclusively for structure no requirement asks for:
+If the ponytail skill is available to you, invoke it first and apply its ruleset
+(YAGNI ladder, stdlib/native-first) — it is the purpose-built version of this critique.
+Either way, hunt exclusively for structure no requirement asks for:
 - layers, abstractions, interfaces, or config introduced "for later";
 - a new dependency where the stdlib, the platform, or an existing helper does the job;
 - slices or tasks that exist for symmetry rather than a requirement;

@@ -61,7 +61,7 @@ Copilot picks the model in the session picker.
 |---|---|---|
 | top (opus) | plan-feature, critique, defend, review-fresh, prepare, execute, verify-feature | long-horizon reasoning; edge-case enumeration is the largest capability gap |
 | mid (sonnet) | research, shard, ship-report, verify-prod | retrieval and bookkeeping |
-| cheapest (haiku) | critic-minimalism subagent | slop detection is pattern-matching |
+| cheapest (haiku) | minimalism critique — ponytail's `/ponytail-review` when installed (purpose-built, benchmarked), else the critic-minimalism subagent | slop detection is pattern-matching |
 
 Same-vendor critics disagree less than they appear to. The one genuinely uncorrelated
 reviewer is cross-vendor: `/critique` and `/verify-feature` shell out to `codex exec`

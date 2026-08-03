@@ -16,6 +16,7 @@ same lanes sequentially, and collapse reviews B/C into one extra self-contained 
 | Review A | Fresh context, top-tier model: the full `/review-fresh` procedure. Input: paths + acceptance criteria ONLY — never the implementation narrative. |
 | Review B | Second independent fresh review, mid-tier model — different model, different blind spots. Same paths-only input. |
 | Review C | Cross-vendor (if `codex` CLI installed): background `codex exec` review of the diff vs the criteria. |
+| Slop | If the ponytail plugin is installed: `/ponytail-review` on the diff — it owns over-engineering findings entirely (reviews A/B then skip that dimension). Not installed: reviews A/B cover it. |
 | Tests | The AGENTS.md test command + any other suites it names (unit/integration). Update `.verify-state.json` (`"tests": "green"|"red"`) when done. |
 | Device / e2e | Check the AGENTS.md Real-device prereqs; if met, run the real-device/e2e script for the plan's e2e matrix rows. If not configured or prereqs unmet: record the lane as `skipped (<reason>)` — never silently pass it. |
 | Docs | Fresh mid-tier context: diff → find affected docs (README, docs/, API refs, AGENTS.md tech-stack) → apply the updates. |
