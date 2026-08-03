@@ -19,8 +19,12 @@ install_graphify() {
     if confirm "graphify needs 'uv' (Python tool runner). Install uv now?" y; then
       if [ "$ADK_PKG" = brew ]; then
         brew install uv || log_warn "brew install uv failed."
-      else
+      elif has_cmd curl; then
         curl -LsSf https://astral.sh/uv/install.sh | sh || log_warn "uv install script failed."
+      elif has_cmd wget; then
+        wget -qO- https://astral.sh/uv/install.sh | sh || log_warn "uv install script failed."
+      else
+        log_warn "Neither curl nor wget available - can't fetch the uv installer."
       fi
     else
       log_warn "Skipping graphify (uv not installed)."
@@ -29,8 +33,17 @@ install_graphify() {
   fi
   _adk_ensure_local_bin
   if ! has_cmd uv; then
-    log_warn "uv still not on PATH; skipping graphify. Install uv and run 'uv tool install graphifyy' later."
-    return 0
+    # No uv (e.g. locked-down container): graphify is a plain PyPI package, so
+    # user-level pip works without curl/wget/sudo.
+    if has_cmd python3 && python3 -m pip --version >/dev/null 2>&1; then
+      log_info "uv unavailable - falling back to: python3 -m pip install --user graphifyy"
+      python3 -m pip install --user --upgrade graphifyy || log_warn "pip install graphifyy failed."
+      _adk_ensure_local_bin
+    fi
+    if ! has_cmd graphify; then
+      log_warn "graphify not installed (no uv, pip fallback unavailable). Later: 'pip install --user graphifyy'."
+      return 0
+    fi
   fi
 
   # 2. Install the graphify CLI + register the skill.
