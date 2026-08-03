@@ -13,8 +13,13 @@ Run **inside the project you want to configure**:
 # Core — prompts you through which agents + tools to enable
 curl -fsSL https://raw.githubusercontent.com/VM-development/ai-dev-kit/main/bootstrap.sh | bash
 
-# Core + all optional tools (Grep MCP, private-journal, Claude guardrail hooks)
+# Core + all optional tools (Grep MCP, private-journal, Claude guardrail + process hooks)
 curl -fsSL https://raw.githubusercontent.com/VM-development/ai-dev-kit/main/bootstrap.sh \
+  | bash -s -- --with-all-extras
+
+# No curl? Same via wget
+wget -qO- https://raw.githubusercontent.com/VM-development/ai-dev-kit/main/bootstrap.sh | bash
+wget -qO- https://raw.githubusercontent.com/VM-development/ai-dev-kit/main/bootstrap.sh \
   | bash -s -- --with-all-extras
 ```
 
