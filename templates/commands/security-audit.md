@@ -8,8 +8,8 @@ same on your Max plan.)
 Read this repo's `AGENTS.md` Standards first for project conventions.
 
 **Step 1 — Scope.** Determine what changed / what to audit. Prefer reviewing a diff
-over the whole repo. Use `graphify query "what handles auth / input / secrets"` or
-`ast-grep` (if available) to locate sensitive sinks quickly.
+over the whole repo. Use `graphify query "what handles auth / input / secrets"` to
+locate sensitive sinks quickly.
 
 **Step 2 — Hunt for real vulnerabilities**, in priority order:
 - Injection (SQL/command/template/path traversal), unsafe deserialization, SSRF.

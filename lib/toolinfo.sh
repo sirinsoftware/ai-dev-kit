@@ -21,10 +21,6 @@ tool_info() {
       _ti "dev methodology - makes the agent brainstorm -> plan -> TDD -> review, not dump code" \
           "per-user Claude plugin (no project files); '/reload-plugins' or restart to activate" \
           "just ask for a feature; it clarifies + plans + writes tests first" ;;
-    ast-grep)
-      _ti "structural (AST) code search + safe codemods, many languages; 100% local" \
-          "CLI only (no project file needed); optional sgconfig.yml for lint rules" \
-          "ast-grep -p 'useEffect(\$F, [])' -l tsx   (add -r '...' to rewrite repo-wide)" ;;
     grep)
       _ti "search ~1M PUBLIC GitHub repos for real-world usage examples (not your code)" \
           "remote MCP, no key; entry in .mcp.json / .codex/config.toml / .vscode/mcp.json; sends only your query" \

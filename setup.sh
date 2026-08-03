@@ -22,7 +22,7 @@ NO_GRAPHIFY=""
 GITIGNORE_GENERATED=""
 NO_GITIGNORE=""
 ON_CONFLICT="prompt"            # prompt | backup | skip | overwrite
-WANT_ASTGREP=""; WANT_GREP_MCP=""; WANT_JOURNAL=""; WANT_HOOKS=""; NO_EXTRAS=""
+WANT_GREP_MCP=""; WANT_JOURNAL=""; WANT_HOOKS=""; NO_EXTRAS=""
 SUPERPOWERS_REPO="https://github.com/obra/superpowers"
 SUPERPOWERS_MARKETPLACE="obra/superpowers-marketplace"
 
@@ -46,7 +46,6 @@ Options:
   --no-gitignore              Don't add generated files to .gitignore (and don't prompt)
   --on-conflict=POLICY        When a file you already have collides: prompt | backup |
                               skip | overwrite (default: prompt; --yes treats it as backup)
-  --with-ast-grep             Install ast-grep (structural search + codemods)
   --with-grep                 Add Grep MCP (search ~1M public repos for usage)
   --with-journal              Add private-journal MCP (cross-session memory)
   --with-hooks                Add Claude guardrail hooks (deny secrets/dangerous cmds)
@@ -72,11 +71,10 @@ while [ $# -gt 0 ]; do
     --gitignore)          GITIGNORE_GENERATED=1 ;;
     --no-gitignore)       NO_GITIGNORE=1 ;;
     --on-conflict=*)      ON_CONFLICT="${1#*=}" ;;
-    --with-ast-grep)      WANT_ASTGREP=1 ;;
     --with-grep)          WANT_GREP_MCP=1 ;;
     --with-journal)       WANT_JOURNAL=1 ;;
     --with-hooks)         WANT_HOOKS=1 ;;
-    --with-all-extras)    WANT_ASTGREP=1; WANT_GREP_MCP=1; WANT_JOURNAL=1; WANT_HOOKS=1 ;;
+    --with-all-extras)    WANT_GREP_MCP=1; WANT_JOURNAL=1; WANT_HOOKS=1 ;;
     --no-extras)          NO_EXTRAS=1 ;;
     -y|--yes)             ASSUME_YES=1 ;;
     --quiet)              QUIET=1 ;;
@@ -91,14 +89,14 @@ done
 # ---- source libraries -----------------------------------------------------
 for f in log detect prompt idempotent toolinfo mcp \
          configure_claude configure_codex configure_copilot \
-         install_graphify install_ast_grep install_journal scaffold; do
+         install_graphify install_journal scaffold; do
   # shellcheck source=/dev/null
   . "$ADK_ROOT/lib/$f.sh"
 done
 
 export ASSUME_YES QUIET DRY_RUN CLAUDE_MODEL CODEX_MODEL CODEX_REASONING \
        GITIGNORE_GENERATED ON_CONFLICT SUPERPOWERS_REPO SUPERPOWERS_MARKETPLACE \
-       WANT_ASTGREP WANT_GREP_MCP WANT_JOURNAL WANT_HOOKS
+       WANT_GREP_MCP WANT_JOURNAL WANT_HOOKS
 
 case "$ON_CONFLICT" in
   prompt|backup|skip|overwrite) ;;
@@ -144,16 +142,15 @@ decide_gitignore() {
 }
 
 decide_extras() {
-  local have="${WANT_ASTGREP:-}${WANT_GREP_MCP:-}${WANT_JOURNAL:-}${WANT_HOOKS:-}"
+  local have="${WANT_GREP_MCP:-}${WANT_JOURNAL:-}${WANT_HOOKS:-}"
   if [ -z "$have" ] && [ -z "$NO_EXTRAS" ] && [ -z "$ASSUME_YES" ]; then
-    if confirm "Set up optional tools (ast-grep, Grep MCP, private-journal, guardrail hooks)?" n; then
-      confirm "  ast-grep - structural search + codemods?"      y && WANT_ASTGREP=1  || true
+    if confirm "Set up optional tools (Grep MCP, private-journal, guardrail hooks)?" n; then
       confirm "  Grep MCP - search ~1M public repos for usage?"  y && WANT_GREP_MCP=1 || true
       confirm "  private-journal - cross-session memory?"       n && WANT_JOURNAL=1  || true
       [ -n "${EN_CLAUDE:-}" ] && { confirm "  Claude guardrail hooks - deny secrets/dangerous cmds?" y && WANT_HOOKS=1 || true; }
     fi
   fi
-  export WANT_ASTGREP WANT_GREP_MCP WANT_JOURNAL WANT_HOOKS
+  export WANT_GREP_MCP WANT_JOURNAL WANT_HOOKS
 }
 
 print_summary() {
@@ -161,8 +158,8 @@ print_summary() {
   log_info "Target: $TARGET_DIR"
   log_info "Agents: ${EN_CLAUDE:+Claude }${EN_CODEX:+Codex }${EN_COPILOT:+Copilot}"
   [ -n "${GITIGNORE_GENERATED:-}" ] && log_info "Mode: local — generated files were added to .gitignore."
-  if [ -n "${WANT_ASTGREP:-}${WANT_GREP_MCP:-}${WANT_JOURNAL:-}${WANT_HOOKS:-}" ]; then
-    log_info "Optional tools:${WANT_ASTGREP:+ ast-grep}${WANT_GREP_MCP:+ grep-mcp}${WANT_JOURNAL:+ journal}${WANT_HOOKS:+ hooks}"
+  if [ -n "${WANT_GREP_MCP:-}${WANT_JOURNAL:-}${WANT_HOOKS:-}" ]; then
+    log_info "Optional tools:${WANT_GREP_MCP:+ grep-mcp}${WANT_JOURNAL:+ journal}${WANT_HOOKS:+ hooks}"
     [ -n "${WANT_GREP_MCP:-}${WANT_JOURNAL:-}" ] && log_dim "MCP servers were added to your agent config(s) — restart/reload the agent to load them."
   fi
   echo
@@ -209,9 +206,6 @@ main() {
     if is_dry; then log_info "[dry] install graphify + build graph"; else install_graphify; fi
   fi
 
-  if [ -n "${WANT_ASTGREP:-}" ]; then
-    if is_dry; then log_info "[dry] install ast-grep"; else install_ast_grep; fi
-  fi
   if [ -n "${WANT_JOURNAL:-}" ]; then
     if is_dry; then log_info "[dry] build private-journal-mcp"; else install_journal || true; fi
   fi

@@ -10,7 +10,7 @@ Tools in the spirit of **graphify** (codebase intelligence) and **Superpowers**
 > [AGENTS.md](https://agents.md/) standard.
 
 **Now wired into setup as opt-in flags** (reversible via `uninstall.sh`):
-`--with-ast-grep`, `--with-grep` (Grep MCP), `--with-journal` (private-journal),
+`--with-grep` (Grep MCP), `--with-journal` (private-journal),
 and `--with-hooks` (Claude guardrails); plus an always-installed cross-agent
 `/security-audit` command (no API key). **Context7** and **Serena** are *not* wired —
 add them manually if wanted. (Serena was evaluated and dropped: it overlaps graphify
@@ -24,7 +24,6 @@ Everything else below is reference/optional.
 | Tool | What it adds | Install | Agents |
 |---|---|---|---|
 | [Context7 MCP](https://github.com/upstash/context7) | Up-to-date, version-specific library docs/API examples injected at runtime — kills outdated/hallucinated APIs | Remote MCP URL `https://mcp.context7.com/mcp` (no install) | all (MCP) |
-| [ast-grep](https://github.com/ast-grep/ast-grep) | AST/structural code search + safe codemods that text-grep can't express | `brew install ast-grep` · `npm i -g @ast-grep/cli` · `pip install ast-grep-cli` | all (CLI) |
 | [ponytail](https://github.com/DietrichGebert/ponytail) | Lazy-senior-dev skill: agent writes minimal code (YAGNI, stdlib/native first) — ~50% less code, stays safe. Complements Superpowers (methodology → less of it) | Plugin marketplace: `/plugin marketplace add DietrichGebert/ponytail` + `/plugin install ponytail@ponytail` (Claude; `codex`/`copilot` same subcommands) | all (plugin + `AGENTS.md`) |
 | [spec-kit](https://github.com/github/spec-kit) | Spec-driven development (GitHub, first-party): turn intent into spec → plan → tasks → implementation via `/speckit.*` commands + a project constitution | `uv tool install specify-cli --from git+https://github.com/github/spec-kit.git`, then `specify init . --integration <agent>` | all (`specify init`) |
 | [Serena](https://github.com/oraios/serena) *(not wired — removed)* | LSP-backed semantic symbol nav + precise cross-file edits (40+ langs) — live intelligence vs. graphify's static graph | manual: `uvx --from git+https://github.com/oraios/serena serena-mcp-server` as an MCP entry (heaviest: uv+Python+LSP) | all (MCP) |
@@ -87,6 +86,6 @@ Everything else below is reference/optional.
 - `pip install repomapper`, `brew install rulesync` — no such packages (use the installs above).
 
 ## Current wiring
-- **Wired (opt-in flags):** ast-grep, Grep MCP, private-journal, Claude hooks; always-on `/security-audit`.
+- **Wired (opt-in flags):** Grep MCP, private-journal, Claude hooks; always-on `/security-audit`.
 - **Not wired (add manually if wanted):** Context7 (one MCP entry; for fast-moving deps), Serena (overlaps graphify; heavy LSP footprint — removed).
 - **Reference only:** the optional/skip tools above (Repomix, Gitingest, GitHub MCP, etc.).

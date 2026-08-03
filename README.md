@@ -13,7 +13,7 @@ Run **inside the project you want to configure**:
 # Core — prompts you through which agents + tools to enable
 curl -fsSL https://raw.githubusercontent.com/VM-development/ai-dev-kit/main/bootstrap.sh | bash
 
-# Core + all optional tools (ast-grep, Grep MCP, private-journal, Claude guardrail hooks)
+# Core + all optional tools (Grep MCP, private-journal, Claude guardrail hooks)
 curl -fsSL https://raw.githubusercontent.com/VM-development/ai-dev-kit/main/bootstrap.sh \
   | bash -s -- --with-all-extras
 ```
@@ -22,8 +22,10 @@ Non-interactive: append `bash -s -- --yes --agents=claude,codex,copilot`. All fl
 
 ## Edit after install
 
-Everything you customize lives in **one file — `AGENTS.md`**. Fill in every `{{…}}`; all
-three agents read it. This is where your code standards, check tools, and PR/commit formats go:
+Everything you customize lives in **one file — `AGENTS.md`**. Fill in every `{{…}}` — or run
+**`/fill-agents`** to have your agent infer them from the repo's code, git history, and config
+(best-guess; review the `git diff` after). All three agents read it. This is where your code
+standards, check tools, and PR/commit formats go:
 
 | What you set | Section in `AGENTS.md` | Placeholder(s) |
 |---|---|---|
@@ -70,7 +72,6 @@ extras are opt-in (or all at once with `--with-all-extras`) and reversible by `u
 | [Superpowers](https://github.com/obra/superpowers) | Dev methodology: brainstorm → plan → TDD → review | *"Add feature X"* → it plans + writes tests first | default |
 | [ponytail](https://github.com/DietrichGebert/ponytail) | Minimal-code skill (YAGNI; stdlib/native first) | *"Add a date picker"* → `<input type="date">` | plugin (all 3) |
 | [spec-kit](https://github.com/github/spec-kit) | Spec-driven dev: spec → plan → tasks → implement | `specify init .`, then `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, `/speckit.implement` | `specify` CLI |
-| [ast-grep](https://github.com/ast-grep/ast-grep) | Structural (AST) search + safe codemods, local | `ast-grep -p 'useState($X)' -l tsx` | `--with-ast-grep` |
 | [Grep MCP](https://grep.app) | Search ~1M public GitHub repos for real usage | *"find real-world usage of `<API>`"* | `--with-grep` |
 | [private-journal](https://github.com/obra/private-journal-mcp) | Local cross-session memory (on-device) | *"record in your journal: chose X because Y"* | `--with-journal` |
 | [Claude hooks](templates/claude/hooks/) | Deny secrets / dangerous shell (Claude only) | auto-blocks `cat .env`, `rm -rf /` | `--with-hooks` |
@@ -105,10 +106,6 @@ In Claude Code these run as skills, roughly in order; Codex/Copilot follow the s
 - `specify init . --integration claude` — scaffold the spec-driven structure
 - `/speckit.constitution` → `/speckit.specify "reset password"` → `/speckit.plan` → `/speckit.tasks` → `/speckit.implement`
 
-**[ast-grep](https://github.com/ast-grep/ast-grep)**
-- `ast-grep -p 'console.log($$$)' -l ts` — find every call site
-- `ast-grep -p 'var $X = $Y' -r 'const $X = $Y' -l js` — structural rewrite (codemod)
-
 **[Grep MCP](https://grep.app)** — ask the agent
 - *"use Grep to find real-world usage of `zod .refine`"*
 - *"how do popular repos implement retry-with-backoff?"*
@@ -122,7 +119,7 @@ In Claude Code these run as skills, roughly in order; Codex/Copilot follow the s
 - blocks dangerous shell (`rm -rf /`, `curl … | sh`, force-push to `main`)
 
 ## Example prompt — a feature through every tool
-Drive one feature through graphify, Grep MCP, ast-grep, the workflow, and private-journal
+Drive one feature through graphify, Grep MCP, the workflow, and private-journal
 (full walk-through: [docs/example-prompt.md](docs/example-prompt.md)):
 
 ```text
@@ -132,16 +129,16 @@ workflow — don't jump straight to code.
    middleware registered" + graphify path "<router>" "<handler>" → integration points.
 2. Prior art (Grep MCP). Search public repos for real rate-limiter middleware in our
    language (token-bucket / sliding-window); show 2-3 examples + trade-offs.
-3. Survey our code (ast-grep). ast-grep -p 'app.use($M)' -l ts (adapt) → every call site.
-4. Decide + record (private-journal). Pick algorithm/config; record the decision AND why.
-5. Plan + build (workflow). Failing test first → implement → wire in → run test/lint/
+3. Decide + record (private-journal). Pick algorithm/config; record the decision AND why.
+4. Plan + build (workflow). Failing test first → implement → wire in → run test/lint/
    typecheck from AGENTS.md → self-review vs Standards.
-6. Wrap up. Summarize, graphify update ., report what you journaled. Don't push.
+5. Wrap up. Summarize, graphify update ., report what you journaled. Don't push.
 ```
 
 ## Reference
-- **Slash commands** (where enabled): `/pr-review`, `/deep-test`, `/security-audit` (no API key), `/progress-report`, `/repeatable-task`, `/report-html`. Codex uses `/prompts:<name>`.
+- **Slash commands** (where enabled): `/pr-review`, `/deep-test`, `/security-audit` (no API key), `/progress-report`, `/repeatable-task`, `/report-html`, `/fill-agents` (fill `AGENTS.md` from the repo), `/update-tools`. Codex uses `/prompts:<name>`.
 - **HTML reports/plans:** ask any report/plan command for HTML — or run `/report-html <topic|file>` — for a styled, self-contained `.html` (Catppuccin Mocha) under `docs/reports/`. The house style lives in `AGENTS.md` → Output formats.
 - **Options & conflict handling:** `./setup.sh --help`. Re-running is safe (idempotent; tracked in `.ai-dev-kit-manifest`); `AGENTS.md` is never overwritten.
+- **Update tools:** `~/.ai-dev-kit/update.sh .` (or `/update-tools`) — upgrades graphify + spec-kit and rebuilds the code graph; prints the `/plugin update` step for Superpowers/ponytail. Add `--dry-run` to preview.
 - **Uninstall:** `~/.ai-dev-kit/uninstall.sh .` (add `--dry-run` to preview) — restores backups, removes only kit files, strips kit `.gitignore`/MCP/hook entries.
 - **Docs:** [worked example — a feature through every tool](docs/example-prompt.md) · [how each agent reads its config](docs/single-source-of-truth.md) · [design](docs/DESIGN.md) · [tool catalog](docs/related-tools.md) · [QA test plan](docs/test-plan.html).

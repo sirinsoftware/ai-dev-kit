@@ -32,7 +32,6 @@ uninstall.sh                   reverse setup for a project (restore/remove)
 lib/*.sh                       helpers + per-agent configure modules + scaffolding
   commands.sh                  the shared command list (used by scaffold + uninstall)
   mcp.sh + mcp_upsert.py       register MCP servers per agent (opt-in tools)
-  install_ast_grep.sh          ast-grep CLI installer (opt-in)
   hooks_merge.py               merge Claude guardrail hooks into settings.json (opt-in)
 templates/                     files rendered into the target project
   AGENTS.md.tmpl               the source of truth, incl. Standards (with placeholders)
@@ -42,7 +41,7 @@ templates/                     files rendered into the target project
 docs/                          this design, the SoT matrix, Superpowers notes, related-tools
 examples/filled/               a worked example
 
-Optional tools (ast-grep, Grep/journal MCP, Claude hooks) are opt-in via
+Optional tools (Grep/journal MCP, Claude hooks) are opt-in via
 `--with-*` flags / prompt; MCP additions are tracked in `.ai-dev-kit-mcp` so
 uninstall removes exactly the kit's entries (preserving your other MCP servers).
 examples/filled/               a worked example

@@ -83,6 +83,8 @@ ai-dev-kit installs these as native slash commands (where you enabled them):
 | `repeatable-task <task>`  | turn a recurring chore into a runbook | `/repeatable-task` · `/prompts:repeatable-task` |
 | `security-audit <ref>`    | security review of a diff/area (no API key) | `/security-audit` · `/prompts:security-audit` |
 | `report-html <topic/file>`| render a report/plan as a styled self-contained HTML file | `/report-html` · `/prompts:report-html` |
+| `fill-agents`             | fill this file's `{{…}}` placeholders from repo evidence | `/fill-agents` · `/prompts:fill-agents` |
+| `update-tools`            | upgrade installed tools + rebuild the code graph | `/update-tools` · `/prompts:update-tools` |
 
 (Copilot prompt files work in IDE chat only — the Copilot cloud agent follows this file instead.)
 For Claude, the built-in `/security-review` also works on your Claude plan (no API key).
@@ -111,9 +113,6 @@ When a graph exists (`graphify-out/graph.json`):
 - Prefer these over broad grep/file dumps. After changing code, run `graphify update .`.
 
 ## Optional tooling (use when configured)
-- **ast-grep** (if installed) for exact structural search and safe codemods:
-  `ast-grep -p '<pattern>' -l <lang>` (rewrite with `-r '<replacement>'`). Prefer it
-  over regex for structure-aware matches/refactors; use graphify to orient first.
 - **MCP servers** (if configured in `.mcp.json` / `.codex/config.toml` / `.vscode/mcp.json`):
   Context7 for up-to-date library docs, Grep for real-world usage across public repos,
   private-journal for cross-session memory.

@@ -63,6 +63,8 @@ _cmd_desc() {
     repeatable-task) echo "Turn a recurring task into a deterministic, repeatable runbook." ;;
     security-audit)  echo "Security review of a diff/area in this session (no API key)." ;;
     report-html)     echo "Render a report/plan/topic as a styled, self-contained HTML file." ;;
+    fill-agents)     echo "Fill AGENTS.md placeholders from repo evidence (code, git history, config)." ;;
+    update-tools)    echo "Upgrade ai-dev-kit's installed tools and rebuild the code graph." ;;
     *)               echo "ai-dev-kit command." ;;
   esac
 }
@@ -75,6 +77,8 @@ _cmd_hint() {
     repeatable-task) echo "task to codify" ;;
     security-audit)  echo "PR ref / path (default: current diff)" ;;
     report-html)     echo "topic, file, or report to render (default: ask)" ;;
+    fill-agents)     echo "path to the repo (default: current directory)" ;;
+    update-tools)    echo "path to the repo (default: current directory)" ;;
     *)               echo "argument" ;;
   esac
 }
