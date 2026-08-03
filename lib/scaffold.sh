@@ -65,7 +65,28 @@ _cmd_desc() {
     report-html)     echo "Render a report/plan/topic as a styled, self-contained HTML file." ;;
     fill-agents)     echo "Fill AGENTS.md placeholders from repo evidence (code, git history, config)." ;;
     update-tools)    echo "Upgrade ai-dev-kit's installed tools and rebuild the code graph." ;;
+    research)        echo "Delivery phase 1: what is true today - context.md + Unknowns (no solutions)." ;;
+    plan-feature)    echo "Delivery phase 2: plan with slices, test matrix, failure matrix." ;;
+    critique)        echo "Delivery phase 3: parallel critics attack the plan; mechanical merge." ;;
+    defend)          echo "Delivery phase 4: hostile questioning of the plan -> READY / NOT READY." ;;
+    shard)           echo "Delivery phase 5: worktree per slice with conflict-checked TASK.md." ;;
+    review-fresh)    echo "Delivery phase 6: fresh-context verdict review of a diff vs criteria." ;;
+    ship-report)     echo "Delivery phase 7: deploy recommendation for a human (no diffs)." ;;
+    verify-prod)     echo "Delivery phase 8: read-only production verification of the matrices." ;;
+    prepare)         echo "Combo: research -> plan -> critique -> defend, ends READY / NOT READY." ;;
+    execute)         echo "Implement the defended plan (gated on READY): TDD, slices, local commits." ;;
+    verify-feature)  echo "Combo verify: format+lint, parallel reviews/tests/device/docs, commit msg + PR text." ;;
     *)               echo "ai-dev-kit command." ;;
+  esac
+}
+
+# Recommended model per command (Claude Code frontmatter; '' = inherit session model).
+# Route by task difficulty: retrieval/bookkeeping -> sonnet, long-horizon reasoning -> opus.
+_cmd_model() {
+  case "$1" in
+    research|shard|ship-report|verify-prod)                       echo "sonnet" ;;
+    plan-feature|critique|defend|review-fresh|prepare|execute|verify-feature) echo "opus" ;;
+    *)                                                            echo "" ;;
   esac
 }
 
@@ -79,19 +100,32 @@ _cmd_hint() {
     report-html)     echo "topic, file, or report to render (default: ask)" ;;
     fill-agents)     echo "path to the repo (default: current directory)" ;;
     update-tools)    echo "path to the repo (default: current directory)" ;;
+    research)        echo "feature description (or existing slug)" ;;
+    plan-feature)    echo "docs/process/ slug from /research" ;;
+    critique)        echo "docs/process/ slug with a plan.md" ;;
+    defend)          echo "docs/process/ slug with a plan.md" ;;
+    shard)           echo "docs/process/ slug with a READY defense" ;;
+    review-fresh)    echo "slug / branch / diff ref (default: current branch)" ;;
+    ship-report)     echo "docs/process/ slug with verify.md" ;;
+    verify-prod)     echo "docs/process/ slug of a deployed feature" ;;
+    prepare)         echo "feature description" ;;
+    execute)         echo "docs/process/ slug with a READY defense" ;;
+    verify-feature)  echo "docs/process/ slug with implementation done" ;;
     *)               echo "argument" ;;
   esac
 }
 
 # Claude Code: .claude/commands/<name>.md  (argument via $ARGUMENTS)
 _write_command_claude() {
-  local name="$1" body="$2" rel=".claude/commands/$1.md" dest="$TARGET_DIR/.claude/commands/$1.md" tmp
+  local name="$1" body="$2" rel=".claude/commands/$1.md" dest="$TARGET_DIR/.claude/commands/$1.md" tmp model
   should_write "$dest" "$rel" || return 0
   mkdir -p "$TARGET_DIR/.claude/commands"; tmp="$(mktemp)"
+  model="$(_cmd_model "$name")"
   {
     printf -- '---\n'
     printf 'description: %s\n' "$(_cmd_desc "$name")"
     printf 'argument-hint: "%s"\n' "$(_cmd_hint "$name")"
+    [ -n "$model" ] && printf 'model: %s\n' "$model"
     printf -- '---\n\n'
     sed 's/__ARG__/$ARGUMENTS/g' "$body"
   } > "$tmp"
@@ -194,25 +228,74 @@ scaffold_extras() {
   if [ -n "$any" ]; then
     log_success "MCP servers registered for:${EN_CLAUDE:+ Claude}${EN_CODEX:+ Codex}${EN_COPILOT:+ Copilot}"
   fi
-  if [ -n "${WANT_HOOKS:-}" ] && [ -n "${EN_CLAUDE:-}" ]; then scaffold_hooks; fi
+  if [ -n "${WANT_HOOKS:-}${WANT_PROCESS_HOOKS:-}" ] && [ -n "${EN_CLAUDE:-}" ]; then scaffold_hooks; fi
   return 0
 }
 
-# Claude-only deterministic guardrail hooks (deny secrets / dangerous shell commands).
+# Claude-only hook sets: deterministic guardrails (--with-hooks) and/or the
+# delivery-process gates (--with-process-hooks). hooks_merge.py is declarative:
+# it rewrites exactly the requested kit entries in settings.json (user hooks untouched).
 scaffold_hooks() {
-  has_cmd python3 || { log_warn "python3 not found - skipping Claude guardrail hooks."; return 0; }
+  has_cmd python3 || { log_warn "python3 not found - skipping Claude hooks."; return 0; }
+  local flags="" f
   mkdir -p "$TARGET_DIR/.claude/hooks"
-  cp "$ADK_ROOT/templates/claude/hooks/guard-bash.py"  "$TARGET_DIR/.claude/hooks/guard-bash.py"
-  cp "$ADK_ROOT/templates/claude/hooks/guard-paths.py" "$TARGET_DIR/.claude/hooks/guard-paths.py"
-  chmod +x "$TARGET_DIR/.claude/hooks/guard-bash.py" "$TARGET_DIR/.claude/hooks/guard-paths.py" 2>/dev/null || true
-  record_manifest ".claude/hooks/guard-bash.py"
-  record_manifest ".claude/hooks/guard-paths.py"
-  if python3 "$ADK_ROOT/lib/hooks_merge.py" "$TARGET_DIR/.claude/settings.json"; then
-    log_success "Claude guardrail hooks -> .claude/hooks/ + settings.json (deny secrets / dangerous cmds)"
-    tool_info hooks
+  if [ -n "${WANT_HOOKS:-}" ]; then
+    for f in guard-bash.py guard-paths.py; do
+      cp "$ADK_ROOT/templates/claude/hooks/$f" "$TARGET_DIR/.claude/hooks/$f"
+      chmod +x "$TARGET_DIR/.claude/hooks/$f" 2>/dev/null || true
+      record_manifest ".claude/hooks/$f"
+    done
+    flags="$flags --guards"
+  fi
+  if [ -n "${WANT_PROCESS_HOOKS:-}" ]; then
+    for f in process-gate.py process-stop.py; do
+      cp "$ADK_ROOT/templates/claude/hooks/$f" "$TARGET_DIR/.claude/hooks/$f"
+      chmod +x "$TARGET_DIR/.claude/hooks/$f" 2>/dev/null || true
+      record_manifest ".claude/hooks/$f"
+    done
+    flags="$flags --process"
+  fi
+  # shellcheck disable=SC2086  # flags is a deliberate word-split list
+  if python3 "$ADK_ROOT/lib/hooks_merge.py" $flags "$TARGET_DIR/.claude/settings.json"; then
+    if [ -n "${WANT_HOOKS:-}" ]; then
+      log_success "Claude guardrail hooks -> .claude/hooks/ + settings.json (deny secrets / dangerous cmds)"
+      tool_info hooks
+    fi
+    if [ -n "${WANT_PROCESS_HOOKS:-}" ]; then
+      log_success "Delivery-process hooks -> plan-gate (PreToolUse) + red-build stop gate (Stop)"
+      tool_info process-hooks
+    fi
   else
     log_warn "Could not merge hooks into .claude/settings.json."
   fi
+}
+
+# The delivery-process critic subagents (Claude-only; used by /critique and /prepare).
+scaffold_agents() {
+  [ -n "${EN_CLAUDE:-}" ] || return 0
+  local f rel
+  mkdir -p "$TARGET_DIR/.claude/agents"
+  for f in critic-edge-cases critic-rollback critic-minimalism; do
+    rel=".claude/agents/$f.md"
+    should_write "$TARGET_DIR/$rel" "$rel" || continue
+    cp "$ADK_ROOT/templates/claude/agents/$f.md" "$TARGET_DIR/$rel"
+    record_manifest "$rel"
+  done
+  log_success "Critic subagents -> .claude/agents/ (edge-cases, rollback, minimalism)"
+  return 0
+}
+
+# Delivery-process reference + guides, scaffolded into the project's docs/.
+scaffold_docs() {
+  local rel
+  for rel in docs/delivery-process.md docs/guides/develop-a-feature.md docs/guides/test-a-feature.md; do
+    should_write "$TARGET_DIR/$rel" "$rel" || continue
+    mkdir -p "$(dirname "$TARGET_DIR/$rel")"
+    cp "$ADK_ROOT/templates/$rel" "$TARGET_DIR/$rel"
+    record_manifest "$rel"
+  done
+  log_success "Delivery process docs -> docs/delivery-process.md + docs/guides/ (develop / test a feature)"
+  return 0
 }
 
 # Ensure CLAUDE.md exists with `@AGENTS.md` as its first line, then a managed notes
@@ -298,8 +381,11 @@ scaffold_project() {
 
   # 5. Reusable commands (native slash commands per enabled tool)
   scaffold_commands
+  # 5b. Delivery-process critic subagents (Claude) + process docs/guides
+  scaffold_agents
+  scaffold_docs
 
-  # 6. Optional tools (MCP servers + Claude guardrail hooks), gated by WANT_* flags
+  # 6. Optional tools (MCP servers + Claude hooks), gated by WANT_* flags
   scaffold_extras
 
   # 7. .gitignore (managed block; honors --gitignore local mode)

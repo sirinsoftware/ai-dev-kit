@@ -236,7 +236,8 @@ clean_gitignore() {
 cleanup_empty_dirs() {
   is_dry && return 0
   local d
-  for d in .claude/commands .claude/hooks .claude .codex .github/prompts .github/workflows .github; do
+  for d in .claude/commands .claude/hooks .claude/agents .claude .codex \
+           .github/prompts .github/workflows .github docs/guides; do
     rmdir "$TARGET_DIR/$d" 2>/dev/null || true
   done
 }

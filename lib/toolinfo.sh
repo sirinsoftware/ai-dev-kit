@@ -34,8 +34,12 @@ tool_info() {
           ".claude/hooks/*.py + a PreToolUse 'hooks' block in .claude/settings.json" \
           "automatic - e.g. reading .env or 'rm -rf /' is denied with a message" ;;
     commands)
-      _ti "reusable slash commands: pr-review, progress-report, deep-test, repeatable-task, security-audit" \
+      _ti "reusable slash commands incl. the delivery process (/prepare -> /execute -> /verify-feature)" \
           ".claude/commands/ (Claude) - ~/.codex/prompts/ (Codex, /prompts:NAME) - .github/prompts/ (Copilot IDE chat)" \
-          "/security-audit (no API key) - /pr-review <PR#> - /deep-test <target>" ;;
+          "/prepare \"<feature>\" - /security-audit (no API key) - /pr-review <PR#>; guide: docs/guides/develop-a-feature.md" ;;
+    process-hooks)
+      _ti "delivery-process enforcement (Claude only) - rules, not advice" \
+          ".claude/hooks/process-gate.py (PreToolUse: no prod edits without a READY defense) + process-stop.py (Stop: no ending on a red build); state in docs/process/<branch>/" \
+          "automatic on process branches; inert elsewhere; escape hatch: ADK_PROCESS_OFF=1" ;;
   esac
 }

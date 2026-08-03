@@ -22,7 +22,7 @@ NO_GRAPHIFY=""
 GITIGNORE_GENERATED=""
 NO_GITIGNORE=""
 ON_CONFLICT="prompt"            # prompt | backup | skip | overwrite
-WANT_GREP_MCP=""; WANT_JOURNAL=""; WANT_HOOKS=""; NO_EXTRAS=""
+WANT_GREP_MCP=""; WANT_JOURNAL=""; WANT_HOOKS=""; WANT_PROCESS_HOOKS=""; NO_EXTRAS=""
 SUPERPOWERS_REPO="https://github.com/obra/superpowers"
 SUPERPOWERS_MARKETPLACE="obra/superpowers-marketplace"
 
@@ -49,6 +49,8 @@ Options:
   --with-grep                 Add Grep MCP (search ~1M public repos for usage)
   --with-journal              Add private-journal MCP (cross-session memory)
   --with-hooks                Add Claude guardrail hooks (deny secrets/dangerous cmds)
+  --with-process-hooks        Enforce the delivery process (Claude): block prod edits
+                              without a defended plan; refuse to stop on a red build
   --with-all-extras           Enable all of the optional tools above
   --no-extras                 Don't prompt for optional tools
   -y, --yes                   Non-interactive; accept all defaults
@@ -74,7 +76,8 @@ while [ $# -gt 0 ]; do
     --with-grep)          WANT_GREP_MCP=1 ;;
     --with-journal)       WANT_JOURNAL=1 ;;
     --with-hooks)         WANT_HOOKS=1 ;;
-    --with-all-extras)    WANT_GREP_MCP=1; WANT_JOURNAL=1; WANT_HOOKS=1 ;;
+    --with-process-hooks) WANT_PROCESS_HOOKS=1 ;;
+    --with-all-extras)    WANT_GREP_MCP=1; WANT_JOURNAL=1; WANT_HOOKS=1; WANT_PROCESS_HOOKS=1 ;;
     --no-extras)          NO_EXTRAS=1 ;;
     -y|--yes)             ASSUME_YES=1 ;;
     --quiet)              QUIET=1 ;;
@@ -96,7 +99,7 @@ done
 
 export ASSUME_YES QUIET DRY_RUN CLAUDE_MODEL CODEX_MODEL CODEX_REASONING \
        GITIGNORE_GENERATED ON_CONFLICT SUPERPOWERS_REPO SUPERPOWERS_MARKETPLACE \
-       WANT_GREP_MCP WANT_JOURNAL WANT_HOOKS
+       WANT_GREP_MCP WANT_JOURNAL WANT_HOOKS WANT_PROCESS_HOOKS
 
 case "$ON_CONFLICT" in
   prompt|backup|skip|overwrite) ;;
@@ -142,15 +145,16 @@ decide_gitignore() {
 }
 
 decide_extras() {
-  local have="${WANT_GREP_MCP:-}${WANT_JOURNAL:-}${WANT_HOOKS:-}"
+  local have="${WANT_GREP_MCP:-}${WANT_JOURNAL:-}${WANT_HOOKS:-}${WANT_PROCESS_HOOKS:-}"
   if [ -z "$have" ] && [ -z "$NO_EXTRAS" ] && [ -z "$ASSUME_YES" ]; then
-    if confirm "Set up optional tools (Grep MCP, private-journal, guardrail hooks)?" n; then
+    if confirm "Set up optional tools (Grep MCP, private-journal, guardrail/process hooks)?" n; then
       confirm "  Grep MCP - search ~1M public repos for usage?"  y && WANT_GREP_MCP=1 || true
       confirm "  private-journal - cross-session memory?"       n && WANT_JOURNAL=1  || true
       [ -n "${EN_CLAUDE:-}" ] && { confirm "  Claude guardrail hooks - deny secrets/dangerous cmds?" y && WANT_HOOKS=1 || true; }
+      [ -n "${EN_CLAUDE:-}" ] && { confirm "  Delivery-process hooks - enforce defended plans / green builds?" n && WANT_PROCESS_HOOKS=1 || true; }
     fi
   fi
-  export WANT_GREP_MCP WANT_JOURNAL WANT_HOOKS
+  export WANT_GREP_MCP WANT_JOURNAL WANT_HOOKS WANT_PROCESS_HOOKS
 }
 
 print_summary() {
@@ -158,8 +162,8 @@ print_summary() {
   log_info "Target: $TARGET_DIR"
   log_info "Agents: ${EN_CLAUDE:+Claude }${EN_CODEX:+Codex }${EN_COPILOT:+Copilot}"
   [ -n "${GITIGNORE_GENERATED:-}" ] && log_info "Mode: local — generated files were added to .gitignore."
-  if [ -n "${WANT_GREP_MCP:-}${WANT_JOURNAL:-}${WANT_HOOKS:-}" ]; then
-    log_info "Optional tools:${WANT_GREP_MCP:+ grep-mcp}${WANT_JOURNAL:+ journal}${WANT_HOOKS:+ hooks}"
+  if [ -n "${WANT_GREP_MCP:-}${WANT_JOURNAL:-}${WANT_HOOKS:-}${WANT_PROCESS_HOOKS:-}" ]; then
+    log_info "Optional tools:${WANT_GREP_MCP:+ grep-mcp}${WANT_JOURNAL:+ journal}${WANT_HOOKS:+ hooks}${WANT_PROCESS_HOOKS:+ process-hooks}"
     [ -n "${WANT_GREP_MCP:-}${WANT_JOURNAL:-}" ] && log_dim "MCP servers were added to your agent config(s) — restart/reload the agent to load them."
   fi
   echo

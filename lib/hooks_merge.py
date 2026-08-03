@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-"""Add or remove ai-dev-kit's guardrail hooks in a .claude/settings.json.
+"""Add or remove ai-dev-kit's hooks in a .claude/settings.json.
 
-Idempotent and surgical: it only ever touches PreToolUse entries whose command
-points at the kit's guard scripts — user hooks and other settings are preserved.
+Idempotent and surgical: it only ever touches PreToolUse/Stop entries whose command
+points at the kit's hook scripts — user hooks and other settings are preserved.
 
 Usage:
-  hooks_merge.py <settings.json>            # add the kit's guard hooks
-  hooks_merge.py --remove <settings.json>   # strip the kit's guard hooks (uninstall)
+  hooks_merge.py [--guards] [--process] <settings.json>   # add the selected hook sets
+  hooks_merge.py --remove <settings.json>                 # strip ALL kit hooks (uninstall)
+
+With no set flag, --guards is assumed (back-compat). Add mode is declarative:
+kit entries are stripped first, then the requested sets are written.
 """
 import json
 import os
@@ -14,15 +17,24 @@ import shutil
 import sys
 
 GUARD = "$CLAUDE_PROJECT_DIR/.claude/hooks"
-ENTRIES = [
+GUARD_ENTRIES = [
     {"matcher": "Bash",
      "hooks": [{"type": "command", "command": f"{GUARD}/guard-bash.py"}]},
     {"matcher": "Read|Edit|Write|MultiEdit",
      "hooks": [{"type": "command", "command": f"{GUARD}/guard-paths.py"}]},
 ]
+PROCESS_PRE_ENTRIES = [
+    {"matcher": "Edit|Write|MultiEdit",
+     "hooks": [{"type": "command", "command": f"{GUARD}/process-gate.py"}]},
+]
+PROCESS_STOP_ENTRIES = [
+    {"hooks": [{"type": "command", "command": f"{GUARD}/process-stop.py"}]},
+]
 
 
 def is_kit_entry(entry):
+    if not isinstance(entry, dict):
+        return False
     for h in entry.get("hooks", []):
         if isinstance(h, dict) and GUARD in str(h.get("command", "")):
             return True
@@ -30,11 +42,16 @@ def is_kit_entry(entry):
 
 
 def main():
-    remove = "--remove" in sys.argv[1:]
-    positional = [a for a in sys.argv[1:] if a != "--remove"]
+    args = sys.argv[1:]
+    remove = "--remove" in args
+    want_guards = "--guards" in args
+    want_process = "--process" in args
+    positional = [a for a in args if not a.startswith("--")]
     if not positional:
         sys.exit("hooks_merge: missing settings.json path")
     path = positional[0]
+    if not remove and not want_guards and not want_process:
+        want_guards = True                      # back-compat default
 
     if not os.path.exists(path):
         if remove:
@@ -63,15 +80,24 @@ def main():
     hooks = data.get("hooks")
     if not isinstance(hooks, dict):
         hooks = {}
-    pre = hooks.get("PreToolUse")
-    pre = [e for e in pre if not is_kit_entry(e)] if isinstance(pre, list) else []
-    if not remove:
-        pre.extend(ENTRIES)
 
-    if pre:
-        hooks["PreToolUse"] = pre
-    else:
-        hooks.pop("PreToolUse", None)
+    for key, additions in (
+        ("PreToolUse",
+         ([] if remove else
+          (GUARD_ENTRIES if want_guards else []) +
+          (PROCESS_PRE_ENTRIES if want_process else []))),
+        ("Stop",
+         ([] if remove else
+          (PROCESS_STOP_ENTRIES if want_process else []))),
+    ):
+        cur = hooks.get(key)
+        cur = [e for e in cur if not is_kit_entry(e)] if isinstance(cur, list) else []
+        cur.extend(additions)
+        if cur:
+            hooks[key] = cur
+        else:
+            hooks.pop(key, None)
+
     if hooks:
         data["hooks"] = hooks
     else:

@@ -118,6 +118,33 @@ In Claude Code these run as skills, roughly in order; Codex/Copilot follow the s
 - blocks reads/edits of secrets (`.env`, `secrets.yaml`, `*.pem`)
 - blocks dangerous shell (`rm -rf /`, `curl … | sh`, force-push to `main`)
 
+## Delivery process — develop features in phases
+
+Cross-agent slash commands for phase-separated development (planning, adversarial
+critique, isolated implementation, multi-model verification). Happy path — three commands:
+
+```text
+/prepare "user can reset password by email"   research → plan → critique → defend  ⇒ Verdict: READY
+/execute <slug>                               TDD implementation (worktrees for parallel slices)
+/verify-feature <slug>                        format+lint+typecheck → parallel: 2 fresh reviews
+                                              (different models) + codex cross-review + tests +
+                                              real-device e2e + docs update ⇒ commit-message.md
+                                              + pr-description.md (nothing committed/pushed)
+```
+
+Granular phases when you need them: `/research`, `/plan-feature`, `/critique` (parallel
+critic subagents), `/defend` (READY/NOT READY gate), `/shard` (conflict-checked worktrees),
+`/review-fresh`, `/ship-report`, `/verify-prod` (read-only). Artifacts land in
+`docs/process/<slug>/`. Model routing is baked into each command's frontmatter for Claude
+(opus for reasoning phases, sonnet for retrieval; Codex: start with `codex -m`); e2e lanes
+run the `REAL_DEVICE_*` script from `AGENTS.md`.
+
+Optional enforcement (Claude): `--with-process-hooks` blocks production edits until a plan
+is defended and refuses to stop on a red build (`ADK_PROCESS_OFF=1` to bypass).
+
+Guides (scaffolded into your project): `docs/delivery-process.md` ·
+`docs/guides/develop-a-feature.md` · `docs/guides/test-a-feature.md`.
+
 ## Example prompt — a feature through every tool
 Drive one feature through graphify, Grep MCP, the workflow, and private-journal
 (full walk-through: [docs/example-prompt.md](docs/example-prompt.md)):

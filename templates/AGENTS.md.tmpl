@@ -71,6 +71,9 @@ Work in this order — do not skip ahead to coding:
 
 > If **Superpowers** is installed it enforces this workflow with dedicated skills.
 > The Copilot cloud agent can't run plugins, so the steps above are its canonical version.
+> For sizable features, the delivery-process commands run these steps with phase
+> boundaries and fresh review contexts: `/prepare` → `/execute` → `/verify-feature`
+> (see "Delivery process" below and `docs/delivery-process.md`).
 
 ## Reusable commands
 ai-dev-kit installs these as native slash commands (where you enabled them):
@@ -85,6 +88,14 @@ ai-dev-kit installs these as native slash commands (where you enabled them):
 | `report-html <topic/file>`| render a report/plan as a styled self-contained HTML file | `/report-html` · `/prompts:report-html` |
 | `fill-agents`             | fill this file's `{{…}}` placeholders from repo evidence | `/fill-agents` · `/prompts:fill-agents` |
 | `update-tools`            | upgrade installed tools + rebuild the code graph | `/update-tools` · `/prompts:update-tools` |
+
+### Delivery process (feature development)
+Happy path: `/prepare "<feature>"` → `/execute <slug>` → `/verify-feature <slug>`.
+Granular phases: `/research` · `/plan-feature` · `/critique` · `/defend` · `/shard` ·
+`/review-fresh` · `/ship-report` · `/verify-prod`. Artifacts live in
+`docs/process/<slug>/`; `/execute` is gated on a `Verdict: READY` defense. Reference:
+`docs/delivery-process.md`; guides: `docs/guides/develop-a-feature.md`,
+`docs/guides/test-a-feature.md`. e2e lanes use the Real device/environment section above.
 
 (Copilot prompt files work in IDE chat only — the Copilot cloud agent follows this file instead.)
 For Claude, the built-in `/security-review` also works on your Claude plan (no API key).

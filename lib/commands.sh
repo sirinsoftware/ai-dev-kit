@@ -4,4 +4,5 @@
 [ -n "${_ADK_COMMANDS_SOURCED:-}" ] && return 0
 _ADK_COMMANDS_SOURCED=1
 
-ADK_COMMANDS="pr-review progress-report deep-test repeatable-task security-audit report-html fill-agents update-tools"
+ADK_COMMANDS="pr-review progress-report deep-test repeatable-task security-audit report-html fill-agents update-tools \
+research plan-feature critique defend shard review-fresh ship-report verify-prod prepare execute verify-feature"
