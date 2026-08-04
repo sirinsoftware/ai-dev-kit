@@ -206,6 +206,14 @@ gitignore_step() {
       while IFS= read -r line; do
         [ -n "$line" ] && echo "/$line"
       done < "$(_manifest)"
+      # MCP JSON files (.mcp.json / .vscode/mcp.json) are deliberately NOT in the
+      # manifest (uninstall must never rm a file that may hold user servers), so in
+      # local mode ignore them via the MCP ledger instead.
+      if [ -f "$TARGET_DIR/.ai-dev-kit-mcp" ]; then
+        cut -d'|' -f1 "$TARGET_DIR/.ai-dev-kit-mcp" | sort -u | while IFS= read -r line; do
+          case "$line" in *.json) echo "/$line" ;; esac
+        done
+      fi
     fi
   } | upsert_block "$gi" "gitignore"
   if [ -n "${GITIGNORE_GENERATED:-}" ]; then log_info "Local mode: generated files added to .gitignore."; fi
