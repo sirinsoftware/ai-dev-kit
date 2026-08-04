@@ -166,6 +166,16 @@ print_summary() {
     log_info "Optional tools:${WANT_GREP_MCP:+ grep-mcp}${WANT_JOURNAL:+ journal}${WANT_HOOKS:+ hooks}${WANT_PROCESS_HOOKS:+ process-hooks}"
     [ -n "${WANT_GREP_MCP:-}${WANT_JOURNAL:-}" ] && log_dim "MCP servers were added to your agent config(s) — restart/reload the agent to load them."
   fi
+  # Plugin tools can't be installed by a script (no headless install) — say so here
+  # instead of letting users expect them from --with-all-extras.
+  if [ -n "${EN_CLAUDE:-}" ] && [ ! -d "$HOME/.claude/plugins/cache/ponytail" ]; then
+    echo
+    log_info "Plugin tools (one-time, inside the agent — a script can't install these):"
+    log_dim "ponytail (minimal-code skill): in Claude Code send these as two separate prompts, then restart:"
+    log_dim "  /plugin marketplace add DietrichGebert/ponytail"
+    log_dim "  /plugin install ponytail@ponytail"
+    [ -n "${EN_CODEX:-}" ] && log_dim "Codex CLI: codex plugin marketplace add DietrichGebert/ponytail && codex plugin install ponytail@ponytail"
+  fi
   echo
   log_info "Next steps:"
   log_dim "1. Edit AGENTS.md - your single source of truth for all three agents."
